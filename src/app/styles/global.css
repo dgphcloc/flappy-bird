@@ -1,0 +1,19 @@
+@import "@mantine/core/styles.css";
+/* @import "@mantine/dates/styles.css"; */
+@import "@mantine/notifications/styles.css";
+/* @import "@mantine/nprogress/styles.css"; */
+
+/* Reset CSS để đồng bộ styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  height: 100vh;
+}
+
+body {
+  font-family: sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+}
