@@ -16,7 +16,7 @@ const Game = () => {
       parent: gameRef.current,
       physics: {
         default: "arcade",
-        arcade: { gravity: { x: 0, y: 300 } },
+        arcade: { gravity: { x: 0, y: 0 } },
       },
       scene: [PreLoadScene, BackgroundScene],
       scale: {
