@@ -24,6 +24,13 @@ export default class PreLoadScene extends Phaser.Scene {
       frameWidth: 78,
       frameHeight: 78,
     });
+    this.load.image("username_icon", "iconUser.png");
+    this.load.image("password_icon", "iconPassword.png");
+    this.load.image("eye_icon", "eye_icon.png");
+    this.load.spritesheet("icon_GG", "icon_GG.png", {
+      frameWidth: 53,
+      frameHeight: 53,
+    });
   }
 
   create() {

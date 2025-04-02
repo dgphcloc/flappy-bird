@@ -43,7 +43,7 @@ const Game = () => {
     window.visualViewport?.height || window.innerHeight
   );
   const sizeWidth = Math.max(window.visualViewport?.width || window.innerWidth);
-  console.log(sizeHeight, sizeWidth);
+  // console.log(sizeHeight, sizeWidth);
   return (
     <Box
       ref={gameRef}

@@ -34,9 +34,9 @@ export default class MenuLoginScene extends Phaser.Scene {
     if (!this.scene.isActive("BackgroundScene")) {
       this.scene.launch("BackgroundScene");
     }
-    // if (!this.scene.isActive("LoginScene")) {
-    //   this.scene.launch("LoginScene");
-    // }
+    if (!this.scene.isActive("LoginScene")) {
+      this.scene.launch("LoginScene");
+    }
     this.backgroundMenu = this.add.rectangle(
       0,
       0,
@@ -212,7 +212,7 @@ export default class MenuLoginScene extends Phaser.Scene {
     //   ease: "Sine.easeInOut", // Làm mềm chuyển động
     // });
 
-    // this.ContainerMenu.setVisible(false);
+    this.ContainerMenu.setVisible(false);
 
     const updateContainer = () => {
       this.birdImageContainer.setPosition(0, 0);
