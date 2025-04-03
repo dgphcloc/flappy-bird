@@ -31,6 +31,17 @@ const Game = () => {
         antialias: true, // Làm mượt các cạnh
         roundPixels: false, // Làm tròn pixel
       },
+      dom: {
+        createContainer: true,
+      },
+      input: {
+        mouse: {
+          target: gameRef.current,
+        },
+        touch: {
+          target: gameRef.current,
+        },
+      },
     };
 
     const game = new Phaser.Game(config);
