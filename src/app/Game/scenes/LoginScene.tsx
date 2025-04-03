@@ -27,6 +27,32 @@ export default class LoginScene extends Phaser.Scene {
     const Width = this.scale.width;
     const Height = this.scale.height;
 
+    // Thêm meta viewport để kiểm soát việc zoom và scroll
+    const metaViewport = document.createElement("meta");
+    metaViewport.name = "viewport";
+    metaViewport.content =
+      "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover";
+    document.head.appendChild(metaViewport);
+
+    // Thêm CSS để ngăn chặn việc scroll khi focus vào input
+    const style = document.createElement("style");
+    style.textContent = `
+      html, body {
+        height: 100%;
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+      }
+      #username-input-container input,
+      #password-input-container input {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+    `;
+    document.head.appendChild(style);
+
     // Tạo container và các thành phần khác...
     this.LoginContainer = this.add.container(0, 0);
 
@@ -51,6 +77,23 @@ export default class LoginScene extends Phaser.Scene {
 
     this.LoginContainer.setPosition(Width * 0.5, Height * 0.58);
     this.LoginContainer.setScale(0.85);
+
+    // Thêm sự kiện click bên ngoài để tắt bàn phím ảo
+    document.addEventListener("click", (event) => {
+      const usernameInput = document.querySelector(
+        "#username-input-container input"
+      ) as HTMLInputElement;
+      const passwordInput = document.querySelector(
+        "#password-input-container input"
+      ) as HTMLInputElement;
+
+      if (usernameInput && !usernameInput.contains(event.target as Node)) {
+        usernameInput.blur();
+      }
+      if (passwordInput && !passwordInput.contains(event.target as Node)) {
+        passwordInput.blur();
+      }
+    });
 
     // Thêm input event listener với kiểm tra null
     if (this.input && this.input.keyboard) {
@@ -201,10 +244,6 @@ export default class LoginScene extends Phaser.Scene {
     const passwordInput = document.createElement("input");
     passwordInput.type = "password";
     passwordInput.placeholder = "Password";
-    passwordInput.setAttribute("autocomplete", "new-password");
-    passwordInput.setAttribute("autocorrect", "off");
-    passwordInput.setAttribute("autocapitalize", "off");
-    passwordInput.setAttribute("spellcheck", "false");
     Object.assign(passwordInput.style, inputStyle);
 
     // Tạo DOM element container cho password
