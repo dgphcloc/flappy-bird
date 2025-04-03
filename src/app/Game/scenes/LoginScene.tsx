@@ -10,16 +10,15 @@ export default class LoginScene extends Phaser.Scene {
   private spr_btn_x!: Phaser.GameObjects.Sprite;
   private usernameInput!: Phaser.GameObjects.Text;
   private passwordInput!: Phaser.GameObjects.Text;
-  private loginButton!: Phaser.GameObjects.Text;
   private usernameText: string = "";
   private passwordText: string = "";
-  private isPasswordVisible: boolean = false;
   private readonly MAX_USERNAME_LENGTH = 10;
   private readonly MAX_PASSWORD_LENGTH = 10;
   private usernameContainer!: Phaser.GameObjects.Container;
   private passwordContainer!: Phaser.GameObjects.Container;
-  private loginButtonContainer!: Phaser.GameObjects.Container;
-
+  private isPasswordVisible: boolean = false;
+  private iconGG!: Phaser.GameObjects.Sprite;
+  private iconFB!: Phaser.GameObjects.Sprite;
   constructor() {
     super("LoginScene");
   }
@@ -45,8 +44,9 @@ export default class LoginScene extends Phaser.Scene {
       this.backgroundFrame, // Layer giữa
       this.usernameContainer, // Layer trên (chứa icon và input)
       this.passwordContainer, // Layer trên (chứa icon và input)
-      this.loginButtonContainer, // Layer trên (container chứa nút login)
       this.spr_btn_x, // Layer trên cùng
+      this.iconGG,
+      this.iconFB,
     ]);
 
     this.LoginContainer.setPosition(Width * 0.5, Height * 0.58);
@@ -72,46 +72,44 @@ export default class LoginScene extends Phaser.Scene {
   private createIconGG() {
     const frameWidth = this.backgroundFrame.displayWidth;
     const frameHeight = this.backgroundFrame.displayHeight;
-    const iconGG = this.add.sprite(0, 0, "icon_GG");
-    iconGG.setOrigin(0);
-    iconGG.setScale(1.2);
-    this.usernameContainer.add(iconGG);
-    iconGG.setPosition(-frameWidth / 5.5, frameHeight * 0.33);
-    iconGG.setInteractive({ cursor: "pointer" });
-    iconGG.on("pointerover", () => {
-      iconGG.setFrame(1);
+    this.iconGG = this.add.sprite(0, 0, "icon_GG");
+    this.iconGG.setOrigin(0);
+    this.iconGG.setScale(1.2);
+    this.iconGG.setPosition(-frameWidth / 5.5, frameHeight * 0.17);
+    this.iconGG.setInteractive({ cursor: "pointer" });
+    this.iconGG.on("pointerover", () => {
+      this.iconGG.setFrame(1);
     });
-    iconGG.on("pointerdown", () => {
-      iconGG.setFrame(2);
+    this.iconGG.on("pointerdown", () => {
+      this.iconGG.setFrame(2);
     });
-    iconGG.on("pointerout", () => {
-      iconGG.setFrame(0);
+    this.iconGG.on("pointerout", () => {
+      this.iconGG.setFrame(0);
     });
-    iconGG.on("pointerup", () => {
-      iconGG.setFrame(1);
+    this.iconGG.on("pointerup", () => {
+      this.iconGG.setFrame(1);
       console.log("click iconGG ");
     });
   }
   private createIconFB() {
     const frameWidth = this.backgroundFrame.width;
     const frameHeight = this.backgroundFrame.height;
-    const iconFB = this.add.sprite(0, 0, "icon_FB");
-    iconFB.setOrigin(0);
-    iconFB.setScale(1.2);
-    this.usernameContainer.add(iconFB);
-    iconFB.setPosition(frameWidth / 30, frameHeight * 0.33);
-    iconFB.setInteractive({ cursor: "pointer" });
-    iconFB.on("pointerover", () => {
-      iconFB.setFrame(1);
+    this.iconFB = this.add.sprite(0, 0, "icon_FB");
+    this.iconFB.setOrigin(0);
+    this.iconFB.setScale(1.2);
+    this.iconFB.setPosition(frameWidth / 30, frameHeight * 0.17);
+    this.iconFB.setInteractive({ cursor: "pointer" });
+    this.iconFB.on("pointerover", () => {
+      this.iconFB.setFrame(1);
     });
-    iconFB.on("pointerdown", () => {
-      iconFB.setFrame(2);
+    this.iconFB.on("pointerdown", () => {
+      this.iconFB.setFrame(2);
     });
-    iconFB.on("pointerout", () => {
-      iconFB.setFrame(0);
+    this.iconFB.on("pointerout", () => {
+      this.iconFB.setFrame(0);
     });
-    iconFB.on("pointerup", () => {
-      iconFB.setFrame(1);
+    this.iconFB.on("pointerup", () => {
+      this.iconFB.setFrame(1);
       console.log("click iconFB ");
     });
   }
@@ -120,242 +118,140 @@ export default class LoginScene extends Phaser.Scene {
     const frameWidth = this.backgroundFrame.displayWidth;
     const frameHeight = this.backgroundFrame.displayHeight;
 
-    // Tính toán kích thước input dựa trên frame
-    const inputWidth = frameWidth * 0.65;
-    const inputHeight = frameHeight * 0.15;
-    const inputPadding = inputHeight * 0.2;
-
+    // Tạo style chung cho input
     const inputStyle = {
-      font: `${Math.floor(inputHeight * 0.4)}px Kavoon`,
+      position: "absolute",
+      width: `${frameWidth * 0.65}px`,
+      height: `${frameHeight * 0.15}px`,
+      fontSize: `${Math.floor(frameHeight * 0.15 * 0.4)}px`,
+      fontFamily: "Kavoon",
       color: "#A67943",
       textAlign: "center",
-      fixedWidth: inputWidth,
-      fixedHeight: inputHeight,
+      backgroundColor: "#e5decd",
+      border: "3px solid #A67943",
+      borderRadius: `${(frameHeight * 0.15) / 4}px`,
+      padding: `0 ${frameHeight * 0.15 * 0.2}px`,
+      outline: "none",
     };
 
     // Tạo container cho username input và icon
-    this.usernameContainer = this.add.container(0, -frameHeight / 4);
-    this.usernameContainer.setPosition(0, -frameHeight / 6.5);
+    this.usernameContainer = this.add.container(0, -frameHeight / 6.5);
 
-    // Tạo background và border cho input
-    const usernameBg = this.add.graphics();
-    usernameBg.fillStyle(0xe5decd, 1);
-    usernameBg.fillRoundedRect(
-      -inputWidth / 2 - inputPadding,
-      -inputHeight / 2,
-      inputWidth + inputPadding * 2,
-      inputHeight,
-      inputHeight / 4
-    );
-    // Thêm border
-    usernameBg.lineStyle(3, 0xa67943, 1);
-    usernameBg.strokeRoundedRect(
-      -inputWidth / 2 - inputPadding,
-      -inputHeight / 2,
-      inputWidth + inputPadding * 2,
-      inputHeight,
-      inputHeight / 4
-    );
-    this.usernameContainer.add(usernameBg);
+    // Tạo HTML input cho username
+    const usernameInput = document.createElement("input");
+    usernameInput.type = "text";
+    usernameInput.placeholder = "Username";
+    usernameInput.setAttribute("autocomplete", "off");
+    usernameInput.setAttribute("autocorrect", "off");
+    usernameInput.setAttribute("autocapitalize", "off");
+    usernameInput.setAttribute("spellcheck", "false");
+    Object.assign(usernameInput.style, inputStyle);
 
-    // Tạo username input
-    this.usernameInput = this.add.text(0, 0, "Name", {
-      ...inputStyle,
-      backgroundColor: "transparent",
-      fixedHeight: inputHeight,
-      padding: { x: inputPadding * 2, y: inputHeight * 0.25 },
-      color: "#A67943",
-    });
-    this.usernameInput.setOrigin(0.45, 0.5);
-    this.usernameInput.setInteractive({ cursor: "text" });
-    this.usernameContainer.add(this.usernameInput);
+    // Tạo DOM element container
+    const domContainer = document.createElement("div");
+    domContainer.id = "username-input-container";
+    domContainer.style.position = "absolute";
+    domContainer.style.width = `${frameWidth * 0.65}px`;
+    domContainer.style.height = `${frameHeight * 0.15}px`;
+    domContainer.appendChild(usernameInput);
 
-    // Tạo icon cho username - đặt bên trong input
+    // Thêm DOM container vào game canvas
+    const domElement = this.add.dom(0, 0, domContainer);
+    domElement.setOrigin(0.5, 0.5);
+
+    // Tạo icon cho username
     const usernameIcon = this.add.image(
-      -inputWidth / 2 + inputPadding,
+      -frameWidth * 0.325 + frameHeight * 0.15 * 0.2,
       0,
       "username_icon"
     );
-    const iconScale = (inputHeight * 0.8) / usernameIcon.height;
+    const iconScale = (frameHeight * 0.15 * 0.8) / usernameIcon.height;
     usernameIcon.setScale(iconScale);
-    this.usernameContainer.add(usernameIcon);
 
-    // Thêm sự kiện focus cho username input
-    this.usernameInput.on("pointerdown", () => {
-      this.activeInput = "username";
-      if (this.usernameText === "") {
-        this.usernameInput.setText("");
+    // Thêm icon và DOM element vào container
+    this.usernameContainer.add([usernameIcon, domElement]);
+
+    // Thêm event listeners cho input
+    usernameInput.addEventListener("focus", () => {
+      if (usernameInput.value === "") {
+        usernameInput.placeholder = "";
       }
     });
 
-    // Thêm sự kiện blur cho username input
-    this.usernameInput.on("blur", () => {
-      if (this.usernameText === "") {
-        this.usernameInput.setText("Username");
+    usernameInput.addEventListener("blur", () => {
+      if (usernameInput.value === "") {
+        usernameInput.placeholder = "Username";
       }
     });
+
+    usernameInput.addEventListener("input", (e) => {
+      const target = e.target as HTMLInputElement;
+      if (target.value.length <= this.MAX_USERNAME_LENGTH) {
+        this.usernameText = target.value;
+      }
+    });
+
+    // Thêm container vào LoginContainer chính
+    this.LoginContainer.add(this.usernameContainer);
 
     // Tạo container cho password input và icon
-    this.passwordContainer = this.add.container(0, 0);
-    this.passwordContainer.setPosition(0, frameHeight / 15);
+    this.passwordContainer = this.add.container(0, frameHeight / 15);
 
-    // Tạo background và border cho password input
-    const passwordBg = this.add.graphics();
-    passwordBg.fillStyle(0xe5decd, 1);
-    passwordBg.fillRoundedRect(
-      -inputWidth / 2 - inputPadding,
-      -inputHeight / 2,
-      inputWidth + inputPadding * 2,
-      inputHeight,
-      inputHeight / 4
-    );
-    // Thêm border
-    passwordBg.lineStyle(3, 0xa67943, 1);
-    passwordBg.strokeRoundedRect(
-      -inputWidth / 2 - inputPadding,
-      -inputHeight / 2,
-      inputWidth + inputPadding * 2,
-      inputHeight,
-      inputHeight / 4
-    );
-    this.passwordContainer.add(passwordBg);
+    // Tạo HTML input cho password
+    const passwordInput = document.createElement("input");
+    passwordInput.type = "password";
+    passwordInput.placeholder = "Password";
+    passwordInput.setAttribute("autocomplete", "new-password");
+    passwordInput.setAttribute("autocorrect", "off");
+    passwordInput.setAttribute("autocapitalize", "off");
+    passwordInput.setAttribute("spellcheck", "false");
+    Object.assign(passwordInput.style, inputStyle);
 
-    // Tạo password input
-    this.passwordInput = this.add.text(0, 0, "Password", {
-      ...inputStyle,
-      backgroundColor: "transparent",
-      fixedHeight: inputHeight,
-      padding: { x: inputPadding * 2, y: inputHeight * 0.3 },
-      color: "#A67943",
-    });
-    this.passwordInput.setOrigin(0.45, 0.5);
-    this.passwordInput.setInteractive({ cursor: "text" });
-    this.passwordContainer.add(this.passwordInput);
+    // Tạo DOM element container cho password
+    const passwordDomContainer = document.createElement("div");
+    passwordDomContainer.id = "password-input-container";
+    passwordDomContainer.style.position = "absolute";
+    passwordDomContainer.style.width = `${frameWidth * 0.65}px`;
+    passwordDomContainer.style.height = `${frameHeight * 0.15}px`;
+    passwordDomContainer.appendChild(passwordInput);
 
-    // Tạo icon cho password - đặt bên trong input
+    // Thêm DOM container vào game canvas
+    const passwordDomElement = this.add.dom(0, 0, passwordDomContainer);
+    passwordDomElement.setOrigin(0.5, 0.5);
+
+    // Tạo icon cho password
     const passwordIcon = this.add.image(
-      -inputWidth / 2 + inputPadding,
+      -frameWidth * 0.325 + frameHeight * 0.15 * 0.2,
       0,
       "password_icon"
     );
     passwordIcon.setScale(iconScale);
-    this.passwordContainer.add(passwordIcon);
 
-    // Tạo nút hiển thị/ẩn mật khẩu
-    const eyeIcon = this.add.image(
-      inputWidth / 2 - inputPadding,
-      0,
-      "eye_icon" // Bạn cần thêm asset này vào preload
-    );
-    eyeIcon.setScale(iconScale);
-    eyeIcon.setInteractive({ cursor: "pointer" });
-    this.passwordContainer.add(eyeIcon);
+    // Thêm icon và DOM element vào container
+    this.passwordContainer.add([passwordIcon, passwordDomElement]);
 
-    // Xử lý sự kiện click cho nút con mắt
-    eyeIcon.on("pointerdown", () => {
-      this.isPasswordVisible = !this.isPasswordVisible;
-      if (this.isPasswordVisible) {
-        this.passwordInput.setText(this.passwordText);
-        eyeIcon.setTint(0x7d5729); // Đổi màu khi hiển thị mật khẩu
-      } else {
-        this.passwordInput.setText("*".repeat(this.passwordText.length));
-        eyeIcon.clearTint(); // Xóa màu khi ẩn mật khẩu
+    // Thêm event listeners cho password input
+    passwordInput.addEventListener("focus", () => {
+      if (passwordInput.value === "") {
+        passwordInput.placeholder = "";
       }
     });
 
-    // Thêm hover effect cho nút con mắt
-    eyeIcon.on("pointerover", () => {
-      eyeIcon.setScale(iconScale * 1.1);
-    });
-
-    eyeIcon.on("pointerout", () => {
-      eyeIcon.setScale(iconScale);
-    });
-
-    // Thêm sự kiện focus cho password input
-    this.passwordInput.on("pointerdown", () => {
-      this.activeInput = "password";
-      if (this.passwordText === "") {
-        this.passwordInput.setText("");
+    passwordInput.addEventListener("blur", () => {
+      if (passwordInput.value === "") {
+        passwordInput.placeholder = "Password";
       }
     });
 
-    // Thêm sự kiện blur cho password input
-    this.passwordInput.on("blur", () => {
-      if (this.passwordText === "") {
-        this.passwordInput.setText("Password");
+    passwordInput.addEventListener("input", (e) => {
+      const target = e.target as HTMLInputElement;
+      if (target.value.length <= this.MAX_PASSWORD_LENGTH) {
+        this.passwordText = target.value;
       }
     });
 
-    // Tạo login button với style mới
-    this.loginButtonContainer = this.add.container(0, frameHeight / 4);
-    this.loginButtonContainer.setPosition(0, frameHeight / 2);
-
-    // Tính toán kích thước button
-    const buttonWidth = inputWidth * 0.4;
-    const buttonHeight = inputHeight;
-
-    // Background cho login button
-    const loginBg = this.add.graphics();
-    loginBg.fillStyle(0x8b4513, 1);
-    loginBg.fillRoundedRect(
-      -buttonWidth / 2,
-      -buttonHeight / 2,
-      buttonWidth,
-      buttonHeight,
-      buttonHeight / 2
-    );
-    this.loginButtonContainer.add(loginBg);
-
-    // Text cho login button
-    this.loginButton = this.add.text(0, 0, "Login", {
-      font: `${Math.floor(buttonHeight * 0.6)}px Arial`,
-      color: "#ffffff",
-      padding: { x: inputPadding, y: inputPadding * 0.3 },
-    });
-    this.loginButton.setOrigin(0.5);
-    this.loginButtonContainer.add(this.loginButton);
-
-    // Làm cho container có thể click
-    this.loginButtonContainer.setInteractive(
-      new Phaser.Geom.Rectangle(
-        -buttonWidth / 2,
-        -buttonHeight / 2,
-        buttonWidth,
-        buttonHeight
-      ),
-      Phaser.Geom.Rectangle.Contains
-    );
-
-    // Thêm hover effect
-    this.loginButtonContainer.on("pointerover", () => {
-      loginBg.clear();
-      loginBg.fillStyle(0x654321, 1);
-      loginBg.fillRoundedRect(
-        -buttonWidth / 2,
-        -buttonHeight / 2,
-        buttonWidth,
-        buttonHeight,
-        buttonHeight / 2
-      );
-    });
-
-    this.loginButtonContainer.on("pointerout", () => {
-      loginBg.clear();
-      loginBg.fillStyle(0x8b4513, 1);
-      loginBg.fillRoundedRect(
-        -buttonWidth / 2,
-        -buttonHeight / 2,
-        buttonWidth,
-        buttonHeight,
-        buttonHeight / 2
-      );
-    });
-
-    // Thêm click event
-    this.loginButtonContainer.on("pointerdown", () => {
-      this.handleLogin(this.usernameText, this.passwordText);
-    });
+    // Thêm container vào LoginContainer chính
+    this.LoginContainer.add(this.passwordContainer);
   }
 
   private activeInput: "username" | "password" | null = null;
