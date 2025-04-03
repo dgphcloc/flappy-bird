@@ -177,6 +177,20 @@ export default class LoginScene extends Phaser.Scene {
       outline: "none",
     };
 
+    // Thêm CSS để ngăn chặn Google autofill thay đổi style
+    const autofillStyle = document.createElement("style");
+    autofillStyle.textContent = `
+      input:-webkit-autofill,
+      input:-webkit-autofill:hover,
+      input:-webkit-autofill:focus,
+      input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px #e5decd inset !important;
+        -webkit-text-fill-color: #A67943 !important;
+        transition: background-color 5000s ease-in-out 0s;
+      }
+    `;
+    document.head.appendChild(autofillStyle);
+
     // Tạo container cho username input và icon
     this.usernameContainer = this.add.container(0, -frameHeight / 6.5);
 
@@ -188,6 +202,7 @@ export default class LoginScene extends Phaser.Scene {
     usernameInput.setAttribute("autocorrect", "off");
     usernameInput.setAttribute("autocapitalize", "off");
     usernameInput.setAttribute("spellcheck", "false");
+    usernameInput.setAttribute("data-form-type", "other");
     Object.assign(usernameInput.style, inputStyle);
 
     // Tạo DOM element container
@@ -244,6 +259,11 @@ export default class LoginScene extends Phaser.Scene {
     const passwordInput = document.createElement("input");
     passwordInput.type = "password";
     passwordInput.placeholder = "Password";
+    passwordInput.setAttribute("autocomplete", "new-password");
+    passwordInput.setAttribute("autocorrect", "off");
+    passwordInput.setAttribute("autocapitalize", "off");
+    passwordInput.setAttribute("spellcheck", "false");
+    passwordInput.setAttribute("data-form-type", "other");
     Object.assign(passwordInput.style, inputStyle);
 
     // Tạo DOM element container cho password
