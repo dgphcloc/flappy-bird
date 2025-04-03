@@ -1,5 +1,6 @@
 "use client";
 
+import { cursorTo } from "readline";
 import MenuLoginScene from "./MenuLoginScene";
 
 export default class LoginScene extends Phaser.Scene {
@@ -36,6 +37,7 @@ export default class LoginScene extends Phaser.Scene {
     this.createInputFields();
     this.createButtonX();
     this.createIconGG();
+    this.createIconFB();
 
     // Thêm các thành phần vào container theo đúng thứ tự layer
     this.LoginContainer.add([
@@ -72,9 +74,46 @@ export default class LoginScene extends Phaser.Scene {
     const frameHeight = this.backgroundFrame.displayHeight;
     const iconGG = this.add.sprite(0, 0, "icon_GG");
     iconGG.setOrigin(0);
-    iconGG.setScale(1);
+    iconGG.setScale(1.2);
     this.usernameContainer.add(iconGG);
-    iconGG.setPosition(-frameWidth / 7, frameHeight * 0.33);
+    iconGG.setPosition(-frameWidth / 5.5, frameHeight * 0.33);
+    iconGG.setInteractive({ cursor: "pointer" });
+    iconGG.on("pointerover", () => {
+      iconGG.setFrame(1);
+    });
+    iconGG.on("pointerdown", () => {
+      iconGG.setFrame(2);
+    });
+    iconGG.on("pointerout", () => {
+      iconGG.setFrame(0);
+    });
+    iconGG.on("pointerup", () => {
+      iconGG.setFrame(1);
+      console.log("click iconGG ");
+    });
+  }
+  private createIconFB() {
+    const frameWidth = this.backgroundFrame.width;
+    const frameHeight = this.backgroundFrame.height;
+    const iconFB = this.add.sprite(0, 0, "icon_FB");
+    iconFB.setOrigin(0);
+    iconFB.setScale(1.2);
+    this.usernameContainer.add(iconFB);
+    iconFB.setPosition(frameWidth / 30, frameHeight * 0.33);
+    iconFB.setInteractive({ cursor: "pointer" });
+    iconFB.on("pointerover", () => {
+      iconFB.setFrame(1);
+    });
+    iconFB.on("pointerdown", () => {
+      iconFB.setFrame(2);
+    });
+    iconFB.on("pointerout", () => {
+      iconFB.setFrame(0);
+    });
+    iconFB.on("pointerup", () => {
+      iconFB.setFrame(1);
+      console.log("click iconFB ");
+    });
   }
 
   private createInputFields() {
@@ -84,10 +123,10 @@ export default class LoginScene extends Phaser.Scene {
     // Tính toán kích thước input dựa trên frame
     const inputWidth = frameWidth * 0.65;
     const inputHeight = frameHeight * 0.15;
-    const inputPadding = inputHeight * 0.3;
+    const inputPadding = inputHeight * 0.2;
 
     const inputStyle = {
-      font: `${Math.floor(inputHeight * 0.5)}px Kavoon`,
+      font: `${Math.floor(inputHeight * 0.4)}px Kavoon`,
       color: "#A67943",
       textAlign: "center",
       fixedWidth: inputWidth,
@@ -127,7 +166,7 @@ export default class LoginScene extends Phaser.Scene {
       padding: { x: inputPadding * 2, y: inputHeight * 0.25 },
       color: "#A67943",
     });
-    this.usernameInput.setOrigin(0.5, 0.5);
+    this.usernameInput.setOrigin(0.45, 0.5);
     this.usernameInput.setInteractive({ cursor: "text" });
     this.usernameContainer.add(this.usernameInput);
 
@@ -189,7 +228,7 @@ export default class LoginScene extends Phaser.Scene {
       padding: { x: inputPadding * 2, y: inputHeight * 0.3 },
       color: "#A67943",
     });
-    this.passwordInput.setOrigin(0.5, 0.5);
+    this.passwordInput.setOrigin(0.45, 0.5);
     this.passwordInput.setInteractive({ cursor: "text" });
     this.passwordContainer.add(this.passwordInput);
 
