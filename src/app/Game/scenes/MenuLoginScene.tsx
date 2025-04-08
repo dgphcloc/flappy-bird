@@ -195,23 +195,6 @@ export default class MenuLoginScene extends Phaser.Scene {
         this.TextTitle.y * 1.45
       );
     };
-    // this.tweens.add({
-    //   targets: this.birdMainBG,
-    //   y: this.birdMainBG.y - 1,
-    //   duration: 800,
-    //   yoyo: true,
-    //   repeat: -1,
-    //   ease: "Sine.easeInOut",
-    // });
-    // this.tweens.add({
-    //   targets: this.TextTitle,
-    //   y: this.TextTitle.y - 1,
-    //   duration: 800, // Thời gian di chuyển (ms)
-    //   yoyo: true, // Quay lại vị trí ban đầu
-    //   repeat: -1,
-    //   ease: "Sine.easeInOut", // Làm mềm chuyển động
-    // });
-
     this.ContainerMenu.setVisible(false);
 
     const updateContainer = () => {
