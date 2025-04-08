@@ -19,6 +19,7 @@ export default class LoginScene extends Phaser.Scene {
   private isPasswordVisible: boolean = false;
   private iconGG!: Phaser.GameObjects.Sprite;
   private iconFB!: Phaser.GameObjects.Sprite;
+  private btnSignUp!: Phaser.GameObjects.Sprite;
   constructor() {
     super("LoginScene");
   }
@@ -26,14 +27,12 @@ export default class LoginScene extends Phaser.Scene {
   create() {
     const Width = this.scale.width;
     const Height = this.scale.height;
-
     // Thêm meta viewport để kiểm soát việc zoom và scroll
     const metaViewport = document.createElement("meta");
     metaViewport.name = "viewport";
     metaViewport.content =
       "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover";
     document.head.appendChild(metaViewport);
-
     // Thêm CSS để ngăn chặn việc scroll khi focus vào input
     const style = document.createElement("style");
     style.textContent = `
@@ -53,28 +52,24 @@ export default class LoginScene extends Phaser.Scene {
     `;
     document.head.appendChild(style);
 
-    // Tạo container và các thành phần khác...
     this.LoginContainer = this.add.container(0, 0);
-
-    // Tạo các thành phần theo thứ tự từ dưới lên
     this.createBackground();
     this.createFrame();
     this.createInputFields();
     this.createButtonX();
     this.createIconGG();
     this.createIconFB();
-
-    // Thêm các thành phần vào container theo đúng thứ tự layer
+    this.createButtonSignUp();
     this.LoginContainer.add([
-      this.backgroundLogin, // Layer dưới cùng
-      this.backgroundFrame, // Layer giữa
-      this.usernameContainer, // Layer trên (chứa icon và input)
-      this.passwordContainer, // Layer trên (chứa icon và input)
-      this.spr_btn_x, // Layer trên cùng
+      this.backgroundLogin,
+      this.backgroundFrame,
+      this.usernameContainer,
+      this.passwordContainer,
+      this.spr_btn_x,
       this.iconGG,
       this.iconFB,
+      this.btnSignUp,
     ]);
-
     this.LoginContainer.setPosition(Width * 0.5, Height * 0.58);
     this.LoginContainer.setScale(0.85);
 
@@ -112,6 +107,7 @@ export default class LoginScene extends Phaser.Scene {
     this.backgroundFrame.setOrigin(0.5, 0.5);
     this.backgroundFrame.setScale(1);
   }
+
   private createIconGG() {
     const frameWidth = this.backgroundFrame.displayWidth;
     const frameHeight = this.backgroundFrame.displayHeight;
@@ -134,6 +130,7 @@ export default class LoginScene extends Phaser.Scene {
       console.log("click iconGG ");
     });
   }
+
   private createIconFB() {
     const frameWidth = this.backgroundFrame.width;
     const frameHeight = this.backgroundFrame.height;
@@ -157,6 +154,29 @@ export default class LoginScene extends Phaser.Scene {
     });
   }
 
+  private createButtonSignUp() {
+    const frameWidth = this.backgroundFrame.displayWidth;
+    const frameHeight = this.backgroundFrame.displayHeight;
+    this.btnSignUp = this.add.sprite(0, 0, "btn_sigUp");
+    this.btnSignUp.setOrigin(0.5);
+    this.btnSignUp.setScale(1.1);
+    this.btnSignUp.setPosition(-frameWidth * 0.2, frameHeight * 0.47);
+    this.btnSignUp.setInteractive({ cursor: "pointer" });
+    this.btnSignUp.on("pointerover", () => {
+      this.btnSignUp.setFrame(1);
+    });
+    this.btnSignUp.on("pointerdown", () => {
+      this.btnSignUp.setFrame(2);
+    });
+    this.btnSignUp.on("pointerout", () => {
+      this.btnSignUp.setFrame(0);
+    });
+    this.btnSignUp.on("pointerup", () => {
+      this.btnSignUp.setFrame(1);
+      console.log("click btnSignUp ");
+    });
+  }
+
   private createInputFields() {
     const frameWidth = this.backgroundFrame.displayWidth;
     const frameHeight = this.backgroundFrame.displayHeight;
@@ -166,14 +186,13 @@ export default class LoginScene extends Phaser.Scene {
       position: "absolute",
       width: `${frameWidth * 0.65}px`,
       height: `${frameHeight * 0.15}px`,
-      fontSize: `${Math.floor(frameHeight * 0.15 * 0.4)}px`,
+      fontSize: `${Math.floor(frameHeight * 0.13 * 0.4)}px`,
       fontFamily: "Kavoon",
       color: "#A67943",
-      textAlign: "center",
       backgroundColor: "#e5decd",
       border: "3px solid #A67943",
       borderRadius: `${(frameHeight * 0.15) / 4}px`,
-      padding: `0 ${frameHeight * 0.15 * 0.2}px`,
+      padding: `0 1px 0 2px`,
       outline: "none",
     };
 
@@ -193,11 +212,13 @@ export default class LoginScene extends Phaser.Scene {
 
     // Tạo container cho username input và icon
     this.usernameContainer = this.add.container(0, -frameHeight / 6.5);
+    this.usernameContainer.setDepth(3);
 
     // Tạo HTML input cho username
     const usernameInput = document.createElement("input");
     usernameInput.type = "text";
     usernameInput.placeholder = "Username";
+    usernameInput.maxLength = this.MAX_USERNAME_LENGTH;
     usernameInput.setAttribute("autocomplete", "off");
     usernameInput.setAttribute("autocorrect", "off");
     usernameInput.setAttribute("autocapitalize", "off");
@@ -211,23 +232,29 @@ export default class LoginScene extends Phaser.Scene {
     domContainer.style.position = "absolute";
     domContainer.style.width = `${frameWidth * 0.65}px`;
     domContainer.style.height = `${frameHeight * 0.15}px`;
-    domContainer.appendChild(usernameInput);
-
+    domContainer.style.zIndex = "1";
     // Thêm DOM container vào game canvas
+
+    // Tạo icon bằng img element
+    const iconImg = document.createElement("img");
+    iconImg.src = "asset/iconUser.png"; // Thay bằng đường dẫn thật của icon của bạn
+    iconImg.style.position = "absolute";
+    iconImg.style.left = "10px";
+    iconImg.style.top = "50%";
+    iconImg.style.transform = "translateY(-50%)";
+    iconImg.style.height = "60%";
+    iconImg.style.width = "auto";
+    iconImg.style.zIndex = "2";
+
+    // Điều chỉnh padding cho input để tránh chồng lên icon
+    usernameInput.style.paddingLeft = `${frameHeight * 0.1}px`; // Điều chỉnh padding để phù hợp với kích thước icon
+    domContainer.appendChild(iconImg);
+    domContainer.appendChild(usernameInput);
     const domElement = this.add.dom(0, 0, domContainer);
     domElement.setOrigin(0.5, 0.5);
+    domElement.setDepth(5);
 
-    // Tạo icon cho username
-    const usernameIcon = this.add.image(
-      -frameWidth * 0.325 + frameHeight * 0.15 * 0.2,
-      0,
-      "username_icon"
-    );
-    const iconScale = (frameHeight * 0.15 * 0.8) / usernameIcon.height;
-    usernameIcon.setScale(iconScale);
-
-    // Thêm icon và DOM element vào container
-    this.usernameContainer.add([usernameIcon, domElement]);
+    this.usernameContainer.add([domElement]);
 
     // Thêm event listeners cho input
     usernameInput.addEventListener("focus", () => {
@@ -259,6 +286,7 @@ export default class LoginScene extends Phaser.Scene {
     const passwordInput = document.createElement("input");
     passwordInput.type = "password";
     passwordInput.placeholder = "Password";
+    passwordInput.maxLength = this.MAX_PASSWORD_LENGTH;
     passwordInput.setAttribute("autocomplete", "new-password");
     passwordInput.setAttribute("autocorrect", "off");
     passwordInput.setAttribute("autocapitalize", "off");
@@ -272,22 +300,25 @@ export default class LoginScene extends Phaser.Scene {
     passwordDomContainer.style.position = "absolute";
     passwordDomContainer.style.width = `${frameWidth * 0.65}px`;
     passwordDomContainer.style.height = `${frameHeight * 0.15}px`;
-    passwordDomContainer.appendChild(passwordInput);
-
     // Thêm DOM container vào game canvas
     const passwordDomElement = this.add.dom(0, 0, passwordDomContainer);
     passwordDomElement.setOrigin(0.5, 0.5);
 
-    // Tạo icon cho password
-    const passwordIcon = this.add.image(
-      -frameWidth * 0.325 + frameHeight * 0.15 * 0.2,
-      0,
-      "password_icon"
-    );
-    passwordIcon.setScale(iconScale);
+    const iconImgPassword = document.createElement("img");
+    iconImgPassword.src = "asset/iconPassword.png";
+    iconImgPassword.style.position = "absolute";
+    iconImgPassword.style.left = "10px";
+    iconImgPassword.style.top = "50%";
+    iconImgPassword.style.transform = "translateY(-50%)";
+    iconImgPassword.style.height = "60%";
+    iconImgPassword.style.width = "auto";
+    iconImgPassword.style.zIndex = "2";
 
-    // Thêm icon và DOM element vào container
-    this.passwordContainer.add([passwordIcon, passwordDomElement]);
+    passwordInput.style.paddingLeft = `${frameHeight * 0.1}px`;
+    passwordDomContainer.appendChild(iconImgPassword);
+    passwordDomContainer.appendChild(passwordInput);
+
+    this.passwordContainer.add([passwordDomElement]);
 
     // Thêm event listeners cho password input
     passwordInput.addEventListener("focus", () => {
@@ -402,23 +433,18 @@ export default class LoginScene extends Phaser.Scene {
     this.spr_btn_x.on("pointerover", () => {
       this.spr_btn_x.setFrame(1); // Frame hover
     });
-
     this.spr_btn_x.on("pointerout", () => {
       this.spr_btn_x.setFrame(0); // Frame bình thường
     });
-
     // Xử lý click
     this.spr_btn_x.on("pointerdown", () => {
       this.spr_btn_x.setFrame(2); // Frame click
     });
-
     this.spr_btn_x.on("pointerup", () => {
       this.spr_btn_x.setFrame(1); // Trở về frame hover khi đang hover
-
       // Lấy reference đến MenuLoginScene và gọi phương thức showMenu
       const menuScene = this.scene.get("MenuLoginScene") as MenuLoginScene;
       menuScene.showMenu();
-
       // Tắt scene login
       this.scene.stop("LoginScene");
     });
