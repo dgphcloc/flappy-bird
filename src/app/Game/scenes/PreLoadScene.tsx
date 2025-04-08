@@ -39,6 +39,10 @@ export default class PreLoadScene extends Phaser.Scene {
       frameWidth: 125,
       frameHeight: 60,
     });
+    this.load.spritesheet("btn_Login", "spritesheet_btn_Login.png", {
+      frameWidth: 125,
+      frameHeight: 60,
+    });
   }
 
   create() {

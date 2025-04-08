@@ -16,10 +16,10 @@ export default class LoginScene extends Phaser.Scene {
   private readonly MAX_PASSWORD_LENGTH = 10;
   private usernameContainer!: Phaser.GameObjects.Container;
   private passwordContainer!: Phaser.GameObjects.Container;
-  private isPasswordVisible: boolean = false;
   private iconGG!: Phaser.GameObjects.Sprite;
   private iconFB!: Phaser.GameObjects.Sprite;
   private btnSignUp!: Phaser.GameObjects.Sprite;
+  private btnLogin!: Phaser.GameObjects.Sprite;
   constructor() {
     super("LoginScene");
   }
@@ -60,6 +60,7 @@ export default class LoginScene extends Phaser.Scene {
     this.createIconGG();
     this.createIconFB();
     this.createButtonSignUp();
+    this.createButtonLogin();
     this.LoginContainer.add([
       this.backgroundLogin,
       this.backgroundFrame,
@@ -69,6 +70,7 @@ export default class LoginScene extends Phaser.Scene {
       this.iconGG,
       this.iconFB,
       this.btnSignUp,
+      this.btnLogin,
     ]);
     this.LoginContainer.setPosition(Width * 0.5, Height * 0.58);
     this.LoginContainer.setScale(0.85);
@@ -112,9 +114,9 @@ export default class LoginScene extends Phaser.Scene {
     const frameWidth = this.backgroundFrame.displayWidth;
     const frameHeight = this.backgroundFrame.displayHeight;
     this.iconGG = this.add.sprite(0, 0, "icon_GG");
-    this.iconGG.setOrigin(0);
+    this.iconGG.setOrigin(0.5);
     this.iconGG.setScale(1.2);
-    this.iconGG.setPosition(-frameWidth / 5.5, frameHeight * 0.17);
+    this.iconGG.setPosition(-frameWidth / 9, frameHeight * 0.27);
     this.iconGG.setInteractive({ cursor: "pointer" });
     this.iconGG.on("pointerover", () => {
       this.iconGG.setFrame(1);
@@ -135,9 +137,9 @@ export default class LoginScene extends Phaser.Scene {
     const frameWidth = this.backgroundFrame.width;
     const frameHeight = this.backgroundFrame.height;
     this.iconFB = this.add.sprite(0, 0, "icon_FB");
-    this.iconFB.setOrigin(0);
+    this.iconFB.setOrigin(0.5);
     this.iconFB.setScale(1.2);
-    this.iconFB.setPosition(frameWidth / 30, frameHeight * 0.17);
+    this.iconFB.setPosition(frameWidth / 9, frameHeight * 0.27);
     this.iconFB.setInteractive({ cursor: "pointer" });
     this.iconFB.on("pointerover", () => {
       this.iconFB.setFrame(1);
@@ -159,7 +161,7 @@ export default class LoginScene extends Phaser.Scene {
     const frameHeight = this.backgroundFrame.displayHeight;
     this.btnSignUp = this.add.sprite(0, 0, "btn_sigUp");
     this.btnSignUp.setOrigin(0.5);
-    this.btnSignUp.setScale(1.1);
+    this.btnSignUp.setScale(1);
     this.btnSignUp.setPosition(-frameWidth * 0.2, frameHeight * 0.47);
     this.btnSignUp.setInteractive({ cursor: "pointer" });
     this.btnSignUp.on("pointerover", () => {
@@ -174,6 +176,29 @@ export default class LoginScene extends Phaser.Scene {
     this.btnSignUp.on("pointerup", () => {
       this.btnSignUp.setFrame(1);
       console.log("click btnSignUp ");
+    });
+  }
+
+  private createButtonLogin() {
+    const frameWidth = this.backgroundFrame.displayWidth;
+    const frameHeight = this.backgroundFrame.displayHeight;
+    this.btnLogin = this.add.sprite(0, 0, "btn_Login");
+    this.btnLogin.setOrigin(0.5);
+    this.btnLogin.setScale(1);
+    this.btnLogin.setPosition(frameWidth * 0.2, frameHeight * 0.47);
+    this.btnLogin.setInteractive({ cursor: "pointer" });
+    this.btnLogin.on("pointerover", () => {
+      this.btnLogin.setFrame(1);
+    });
+    this.btnLogin.on("pointerdown", () => {
+      this.btnLogin.setFrame(2);
+    });
+    this.btnLogin.on("pointerout", () => {
+      this.btnLogin.setFrame(0);
+    });
+    this.btnLogin.on("pointerup", () => {
+      this.btnLogin.setFrame(1);
+      console.log("click btnLogin ");
     });
   }
 
