@@ -43,7 +43,7 @@ export default class MenuLoginScene extends Phaser.Scene {
       ScaleWidth,
       ScaleHeight / 3,
       0x530000,
-      0.5
+      0
     );
     this.backgroundMenu.setOrigin(0, 0);
     this.ContainerMenu = this.add.container(ScaleWidth, ScaleHeight);
@@ -143,7 +143,7 @@ export default class MenuLoginScene extends Phaser.Scene {
       ScaleWidth,
       ScaleHeight / 3,
       0x000000,
-      0.2
+      0
     );
     this.backgroundContainer.setOrigin(0.5, 0.5);
 

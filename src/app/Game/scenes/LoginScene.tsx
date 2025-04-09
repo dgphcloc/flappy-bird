@@ -99,7 +99,7 @@ export default class LoginScene extends Phaser.Scene {
   }
 
   private createBackground() {
-    this.backgroundLogin = this.add.rectangle(0, 0, 700, 700, 0x000000, 0.3);
+    this.backgroundLogin = this.add.rectangle(0, 0, 700, 700, 0x000000, 0);
     this.backgroundLogin.setOrigin(0.5, 0.5);
     this.backgroundLogin.setScale(0.8);
   }
@@ -296,6 +296,14 @@ export default class LoginScene extends Phaser.Scene {
 
     usernameInput.addEventListener("input", (e) => {
       const target = e.target as HTMLInputElement;
+      // Lọc bỏ ký tự tiếng Việt
+      const filteredValue = target.value.replace(
+        /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ]/g,
+        ""
+      );
+      if (filteredValue !== target.value) {
+        target.value = filteredValue;
+      }
       if (target.value.length <= this.MAX_USERNAME_LENGTH) {
         this.usernameText = target.value;
       }
@@ -360,6 +368,14 @@ export default class LoginScene extends Phaser.Scene {
 
     passwordInput.addEventListener("input", (e) => {
       const target = e.target as HTMLInputElement;
+      // Lọc bỏ ký tự tiếng Việt
+      const filteredValue = target.value.replace(
+        /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ]/g,
+        ""
+      );
+      if (filteredValue !== target.value) {
+        target.value = filteredValue;
+      }
       if (target.value.length <= this.MAX_PASSWORD_LENGTH) {
         this.passwordText = target.value;
       }
@@ -377,7 +393,7 @@ export default class LoginScene extends Phaser.Scene {
     // Kiểm tra nếu là ký tự tiếng Việt hoặc dấu
     if (
       event.key.match(
-        /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ]/
+        /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ\u0300\u0301\u0303\u0309\u0323]/
       )
     ) {
       return; // Ngăn chặn nhập ký tự tiếng Việt
