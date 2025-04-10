@@ -44,6 +44,7 @@ export default class PreLoadScene extends Phaser.Scene {
       frameWidth: 125,
       frameHeight: 60,
     });
+    this.load.image("background_register", "formRegister.png");
   }
 
   create() {
