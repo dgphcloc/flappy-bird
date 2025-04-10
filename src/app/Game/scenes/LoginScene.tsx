@@ -53,7 +53,6 @@ export default class LoginScene extends Phaser.Scene {
     document.head.appendChild(style);
 
     this.LoginContainer = this.add.container(0, 0);
-    this.createBackground();
     this.createFrame();
     this.createInputFields();
     this.createButtonX();
@@ -62,7 +61,6 @@ export default class LoginScene extends Phaser.Scene {
     this.createButtonSignUp();
     this.createButtonLogin();
     this.LoginContainer.add([
-      this.backgroundLogin,
       this.backgroundFrame,
       this.usernameContainer,
       this.passwordContainer,
@@ -73,8 +71,14 @@ export default class LoginScene extends Phaser.Scene {
       this.btnLogin,
     ]);
     this.LoginContainer.setPosition(Width * 0.5, Height * 0.58);
-    this.LoginContainer.setScale(0.85);
-
+    const screenWidth = this.scale.width;
+    const screenHeight = this.scale.height;
+    const frameWidth = this.backgroundFrame.displayWidth;
+    const frameHeight = this.backgroundFrame.displayHeight;
+    const scaleX = screenWidth / frameWidth;
+    const scaleY = screenHeight / frameHeight;
+    const scale = Math.min(scaleX, scaleY);
+    this.LoginContainer.setScale(scale * 0.7);
     // Thêm sự kiện click bên ngoài để tắt bàn phím ảo
     document.addEventListener("click", (event) => {
       const usernameInput = document.querySelector(
@@ -96,12 +100,6 @@ export default class LoginScene extends Phaser.Scene {
     if (this.input && this.input.keyboard) {
       this.input.keyboard.on("keydown", this.handleKeyDown, this);
     }
-  }
-
-  private createBackground() {
-    this.backgroundLogin = this.add.rectangle(0, 0, 700, 700, 0x000000, 0);
-    this.backgroundLogin.setOrigin(0.5, 0.5);
-    this.backgroundLogin.setScale(0.8);
   }
 
   private createFrame() {
