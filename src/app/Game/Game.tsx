@@ -6,6 +6,7 @@ import BackgroundScene from "./scenes/BackgroundScene";
 import MenuLoginScene from "./scenes/MenuLoginScene";
 import { Box } from "@mantine/core";
 import LoginScene from "./scenes/LoginScene";
+import RegisterScene from "./scenes/RegisterScene";
 const Game = () => {
   const gameRef = useRef<HTMLDivElement>(null);
 
@@ -21,7 +22,13 @@ const Game = () => {
         default: "arcade",
         arcade: { gravity: { x: 0, y: 0 } },
       },
-      scene: [PreLoadScene, BackgroundScene, MenuLoginScene, LoginScene],
+      scene: [
+        PreLoadScene,
+        BackgroundScene,
+        MenuLoginScene,
+        LoginScene,
+        RegisterScene,
+      ],
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
