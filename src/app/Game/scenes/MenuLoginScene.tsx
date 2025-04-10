@@ -1,5 +1,5 @@
 "use client";
-
+import LoginScene from "./LoginScene";
 export default class MenuLoginScene extends Phaser.Scene {
   // Game objects
   private birdMainBG!: Phaser.GameObjects.Sprite;
@@ -7,7 +7,6 @@ export default class MenuLoginScene extends Phaser.Scene {
   private ContainerMenu!: Phaser.GameObjects.Container;
   private birdImageContainer!: Phaser.GameObjects.Container;
   private backgroundContainer!: Phaser.GameObjects.Rectangle;
-  private backgroundMenu!: Phaser.GameObjects.Rectangle;
 
   // State
   private isLoggedIn: boolean = false;
@@ -65,24 +64,15 @@ export default class MenuLoginScene extends Phaser.Scene {
     if (!this.scene.isActive("LoginScene")) {
       this.scene.launch("LoginScene");
     }
+    if (!this.scene.isActive("RegisterScene")) {
+      this.scene.launch("RegisterScene");
+    }
   }
-
-  // private createBackgroundMenu(width: number, height: number) {
-  //   this.backgroundMenu = this.add.rectangle(
-  //     0,
-  //     0,
-  //     width,
-  //     height / 3,
-  //     0x530000,
-  //     0
-  //   );
-  //   this.backgroundMenu.setOrigin(0, 0);
-  // }
 
   private createMenuContainer(width: number, height: number) {
     this.ContainerMenu = this.add.container(width, height);
     // this.ContainerMenu.setScale(1);
-    this.ContainerMenu.setVisible(false);
+    this.ContainerMenu.setVisible(true);
   }
 
   private createMenuButtons() {
@@ -162,22 +152,47 @@ export default class MenuLoginScene extends Phaser.Scene {
   private handleButtonClick(name: string) {
     console.log(`${name} button clicked`);
 
-    if (name === "login" && !this.isLoggedIn) {
-      this.tweens.add({
-        targets: this.ContainerMenu,
-        x: -this.scale.width,
-        duration: 500,
-        ease: "Power2",
-        onComplete: () => {
-          this.ContainerMenu.setVisible(false);
-          this.scene.launch("LoginScene");
-        },
-      });
-    }
+    switch (name) {
+      case "login":
+        if (!this.isLoggedIn) {
+          this.tweens.add({
+            targets: this.ContainerMenu,
+            x: -this.scale.width,
+            duration: 500,
+            ease: "Power2",
+            onComplete: () => {
+              this.ContainerMenu.setVisible(false);
+              // this.scene.launch("LoginScene");
+              const loginScene = this.scene.get("LoginScene") as LoginScene;
+              loginScene.showLoginContainer();
+            },
+          });
+        }
+        break;
 
-    if (name === "Login") {
-      this.isLoggedIn = true;
-      this.scene.restart();
+      case "play":
+        // Xử lý khi click nút play
+        console.log("Play game");
+        break;
+
+      case "birdSkins":
+        // Xử lý khi click nút bird skins
+        console.log("Open bird skins");
+        break;
+
+      case "topPlayer":
+        // Xử lý khi click nút top player
+        console.log("Show top players");
+        break;
+
+      case "settings":
+        // Xử lý khi click nút settings
+        console.log("Open settings");
+        break;
+
+      default:
+        console.log(`Unknown button: ${name}`);
+        break;
     }
   }
 
