@@ -1,21 +1,29 @@
 "use client";
 
-import { Switch } from "@mantine/core";
-import { Scale } from "phaser";
-
 export default class MenuLoginScene extends Phaser.Scene {
+  // Game objects
   private birdMainBG!: Phaser.GameObjects.Sprite;
   private TextTitle!: Phaser.GameObjects.Image;
   private ContainerMenu!: Phaser.GameObjects.Container;
   private birdImageContainer!: Phaser.GameObjects.Container;
   private backgroundContainer!: Phaser.GameObjects.Rectangle;
   private backgroundMenu!: Phaser.GameObjects.Rectangle;
+
+  // State
   private isLoggedIn: boolean = false;
+  private buttonConfig: any[] = [
+    { name: "login", frameIndex: 0, alwaysShow: false },
+    { name: "play", frameIndex: 4, alwaysShow: false },
+    { name: "birdSkins", frameIndex: 1, alwaysShow: false },
+    { name: "topPlayer", frameIndex: 2, alwaysShow: true },
+    { name: "settings", frameIndex: 3, alwaysShow: true },
+  ];
+
   constructor() {
     super("MenuLoginScene");
   }
 
-  // Thêm phương thức public để hiển thị lại menu
+  // Public methods
   public showMenu() {
     if (this.ContainerMenu) {
       this.ContainerMenu.setVisible(true);
@@ -28,33 +36,63 @@ export default class MenuLoginScene extends Phaser.Scene {
     }
   }
 
+  // Scene lifecycle methods
   create() {
     const ScaleWidth = this.scale.width;
     const ScaleHeight = this.scale.height;
+
+    // Launch required scenes
+    this.launchRequiredScenes();
+
+    // Create UI elements
+    // this.createBackgroundMenu(ScaleWidth, ScaleHeight);
+    this.createMenuContainer(ScaleWidth, ScaleHeight);
+    this.createMenuButtons();
+    this.createBirdImageContainer(ScaleWidth, ScaleHeight);
+
+    // Set up event listeners
+    this.setupResizeListener(ScaleWidth, ScaleHeight);
+
+    // Start bird animation
+    this.birdMainBG.play("flappy");
+  }
+
+  // Private helper methods
+  private launchRequiredScenes() {
     if (!this.scene.isActive("BackgroundScene")) {
       this.scene.launch("BackgroundScene");
     }
     if (!this.scene.isActive("LoginScene")) {
       this.scene.launch("LoginScene");
     }
-    this.backgroundMenu = this.add.rectangle(
-      0,
-      0,
-      ScaleWidth,
-      ScaleHeight / 3,
-      0x530000,
-      0
-    );
-    this.backgroundMenu.setOrigin(0, 0);
-    this.ContainerMenu = this.add.container(ScaleWidth, ScaleHeight);
-    const buttonConfig = [
-      { name: "login", frameIndex: 0, alwaysShow: false },
-      { name: "play", frameIndex: 4, alwaysShow: false },
-      { name: "birdSkins", frameIndex: 1, alwaysShow: false },
-      { name: "topPlayer", frameIndex: 2, alwaysShow: true },
-      { name: "settings", frameIndex: 3, alwaysShow: true },
-    ];
-    const visibleButtons = buttonConfig.filter((btn, index) => {
+  }
+
+  // private createBackgroundMenu(width: number, height: number) {
+  //   this.backgroundMenu = this.add.rectangle(
+  //     0,
+  //     0,
+  //     width,
+  //     height / 3,
+  //     0x530000,
+  //     0
+  //   );
+  //   this.backgroundMenu.setOrigin(0, 0);
+  // }
+
+  private createMenuContainer(width: number, height: number) {
+    this.ContainerMenu = this.add.container(width, height);
+    // this.ContainerMenu.setScale(1);
+    this.ContainerMenu.setVisible(false);
+  }
+
+  private createMenuButtons() {
+    const visibleButtons = this.getVisibleButtons(this.buttonConfig);
+    this.renderButtons(visibleButtons);
+    this.updateMenuPosition(visibleButtons.length);
+  }
+
+  private getVisibleButtons(buttonConfig: any[]) {
+    return buttonConfig.filter((btn) => {
       if (this.isLoggedIn) {
         return (
           btn.alwaysShow || btn.name === "play" || btn.name === "birdSkins"
@@ -63,100 +101,130 @@ export default class MenuLoginScene extends Phaser.Scene {
         return btn.alwaysShow || btn.name === "login";
       }
     });
+  }
 
-    const RenderButtons = () => {
-      visibleButtons.forEach((btn, index) => {
-        const button = this.add.sprite(
-          0,
-          index * 85,
-          "button_menu",
-          btn.frameIndex * 3
-        );
-        button.setScale(0.8);
-        button.setOrigin(0.5, 0.5);
-        button.setInteractive();
+  private renderButtons(visibleButtons: any[]) {
+    visibleButtons.forEach((btn, index) => {
+      const spacing = this.scale.height * 0.11;
+      const button = this.add.sprite(
+        0,
+        index * spacing,
+        "button_menu",
+        btn.frameIndex * 3
+      );
 
-        // Hover & Click
-        button.on("pointerover", () => button.setFrame(btn.frameIndex * 3 + 1));
-        button.on("pointerout", () => button.setFrame(btn.frameIndex * 3));
-        button.on("pointerdown", () => {
-          button.setFrame(btn.frameIndex * 3 + 2);
-          handleButtonClick(btn.name);
-        });
+      this.setupButtonProperties(button, btn);
+      this.ContainerMenu.add(button);
+    });
+  }
 
-        this.ContainerMenu.add([this.backgroundMenu, button]);
+  private setupButtonProperties(button: Phaser.GameObjects.Sprite, btn: any) {
+    // Sử dụng kích thước màn hình để tính scale
+    const screenWidth = this.scale.width;
+    const screenHeight = this.scale.height;
+    const buttonWidth = button.width;
+    const buttonHeight = button.height;
+
+    // Tính scale dựa trên kích thước màn hình
+    const scaleX = screenWidth / buttonWidth;
+    const scaleY = screenHeight / buttonHeight;
+    const scale = Math.min(scaleX, scaleY);
+
+    button.setScale(scale * 0.57);
+    button.setOrigin(0.5, 0.5);
+    button.setInteractive();
+
+    button.on("pointerover", () => button.setFrame(btn.frameIndex * 3 + 1));
+    button.on("pointerout", () => button.setFrame(btn.frameIndex * 3));
+    button.on("pointerdown", () => {
+      button.setFrame(btn.frameIndex * 3 + 2);
+      this.handleButtonClick(btn.name);
+    });
+  }
+
+  private updateMenuPosition(buttonCount: number) {
+    const ScaleWidth = this.scale.width;
+    const ScaleHeight = this.scale.height;
+
+    switch (buttonCount) {
+      case 3:
+        this.ContainerMenu.setPosition(ScaleWidth * 0.5, ScaleHeight * 0.45);
+        break;
+      case 4:
+        this.ContainerMenu.setPosition(ScaleWidth * 0.5, ScaleHeight * 0.38);
+        break;
+      default:
+        this.ContainerMenu.setPosition(ScaleWidth * 0.5, ScaleHeight * 0.38);
+        break;
+    }
+  }
+
+  private handleButtonClick(name: string) {
+    console.log(`${name} button clicked`);
+
+    if (name === "login" && !this.isLoggedIn) {
+      this.tweens.add({
+        targets: this.ContainerMenu,
+        x: -this.scale.width,
+        duration: 500,
+        ease: "Power2",
+        onComplete: () => {
+          this.ContainerMenu.setVisible(false);
+          this.scene.launch("LoginScene");
+        },
       });
-    };
-    RenderButtons();
+    }
 
-    const updatePositionMenu = (buttonSize: number) => {
-      switch (buttonSize) {
-        case 3:
-          this.ContainerMenu.setPosition(ScaleWidth * 0.5, ScaleHeight * 0.45);
-          break;
-        case 4:
-          this.ContainerMenu.setPosition(ScaleWidth * 0.5, ScaleHeight * 0.38);
-          break;
-        default:
-          this.ContainerMenu.setPosition(ScaleWidth * 0.5, ScaleHeight * 0.38);
-          break;
-      }
-    };
-    updatePositionMenu(visibleButtons.length);
+    if (name === "Login") {
+      this.isLoggedIn = true;
+      this.scene.restart();
+    }
+  }
 
-    const handleButtonClick = (name: string) => {
-      console.log(`${name} button clicked`);
-      switch (name) {
-        case "login":
-          if (this.isLoggedIn === false) {
-            // this.ContainerMenu.setVisible(false);
-            // Di chuyển containerMenu sang bên trái
-            this.tweens.add({
-              targets: this.ContainerMenu,
-              // Giả sử bạn muốn di chuyển containerMenu ra khỏi màn hình,
-              // hãy lấy vị trí x hiện tại và giảm nó xuống một giá trị đủ lớn (ví dụ: -this.scale.width)
-              x: -this.scale.width,
-              duration: 500, // thời gian di chuyển 500ms (có thể điều chỉnh)
-              ease: "Power2",
-              onComplete: () => {
-                // Sau khi hoàn tất chuyển động, ẩn containerMenu
-                this.ContainerMenu.setVisible(false);
-
-                this.scene.launch("LoginScene");
-                // Hiện ContainerLogin (Form đăng nhập) hoặc thực hiện các hành động tiếp theo
-                // this.ContainerMenu.setVisible(true);
-              },
-            });
-          }
-      }
-
-      if (name === "Login") {
-        this.isLoggedIn = true; // Giả lập đăng nhập
-        this.scene.restart(); // Tải lại scene để cập nhật nút
-      }
-    };
-
+  private createBirdImageContainer(width: number, height: number) {
     this.birdImageContainer = this.add.container(0, 0);
+
+    // Create background
     this.backgroundContainer = this.add.rectangle(
-      ScaleWidth / 2,
-      ScaleHeight / 6,
-      ScaleWidth,
-      ScaleHeight / 3,
+      width / 2,
+      height / 6,
+      width,
+      height / 3,
       0x000000,
       0
     );
     this.backgroundContainer.setOrigin(0.5, 0.5);
 
-    this.TextTitle = this.add.image(
-      ScaleWidth * 0.5,
-      ScaleHeight * 0.15,
-      "TextTitle"
-    );
+    // Create title
+    this.TextTitle = this.add.image(width * 0.5, height * 0.15, "TextTitle");
+
+    // Create bird
     this.birdMainBG = this.physics.add.sprite(
       this.TextTitle.x * 0.75,
       this.TextTitle.y * 1.37,
       "bird1_spr"
     );
+
+    // Create bird animation
+    this.createBirdAnimation();
+
+    // Add elements to container
+    this.birdImageContainer.add([
+      this.TextTitle,
+      this.birdMainBG,
+      this.backgroundContainer,
+    ]);
+
+    // Set layer order
+    this.birdImageContainer.moveTo(this.TextTitle, 2);
+    this.birdImageContainer.moveTo(this.birdMainBG, 1);
+
+    // Update scales
+    this.updateTitleScale(width, height);
+    this.updateBirdScale(width, height);
+  }
+
+  private createBirdAnimation() {
     this.anims.create({
       key: "flappy",
       frames: this.anims.generateFrameNumbers("bird1_spr", {
@@ -166,50 +234,50 @@ export default class MenuLoginScene extends Phaser.Scene {
       frameRate: 5,
       repeat: -1,
     });
-    const updateScaleTextTitle = (width: number, height: number) => {
-      const scalex = width / this.TextTitle.width;
-      const scaley = height / this.TextTitle.height;
-      const scaleTextTitle = Math.min(scalex, scaley);
-      this.TextTitle.setScale(scaleTextTitle);
-    };
-    this.birdImageContainer.add([
-      this.TextTitle,
-      this.birdMainBG,
-      this.backgroundContainer,
-    ]);
-    // cách 1 thay đổi vị trí lớp
-    // this.birdMainBG.setDepth(1);
-    // this.TextTitle.setDepth(2);
-    // this.backgroundContainer.setDepth(3);
-    // cách 2
-    this.birdImageContainer.moveTo(this.TextTitle, 2);
-    this.birdImageContainer.moveTo(this.birdMainBG, 1);
+  }
 
-    const updateScalebrid1_bg = (width: number, height: number) => {
-      const scalex = (width * 0.4) / this.birdMainBG.width;
-      const scaley = height / this.birdMainBG.height;
-      const scalebrid1_bg = Math.min(scalex, scaley);
-      this.birdMainBG.setScale(scalebrid1_bg);
-      this.birdMainBG.setPosition(
-        this.TextTitle.x * 0.75,
-        this.TextTitle.y * 1.45
-      );
-    };
-    this.ContainerMenu.setVisible(false);
+  private updateTitleScale(width: number, height: number) {
+    const scalex = width / this.TextTitle.width;
+    const scaley = height / this.TextTitle.height;
+    const scaleTextTitle = Math.min(scalex, scaley);
+    this.TextTitle.setScale(scaleTextTitle);
+  }
 
-    const updateContainer = () => {
-      this.birdImageContainer.setPosition(0, 0);
-    };
-    updateScaleTextTitle(ScaleWidth, ScaleHeight);
-    updateScalebrid1_bg(ScaleWidth, ScaleHeight);
-    updateContainer();
+  private updateBirdScale(width: number, height: number) {
+    const scalex = (width * 0.4) / this.birdMainBG.width;
+    const scaley = height / this.birdMainBG.height;
+    const scalebrid1_bg = Math.min(scalex, scaley);
+    this.birdMainBG.setScale(scalebrid1_bg);
+    this.birdMainBG.setPosition(
+      this.TextTitle.x * 0.75,
+      this.TextTitle.y * 1.45
+    );
+  }
+
+  private setupResizeListener(width: number, height: number) {
     this.scale.on("resize", (gameSize: { width: number; height: number }) => {
-      updateContainer();
+      this.birdImageContainer.setPosition(0, 0);
       this.cameras.main.setSize(gameSize.width, gameSize.height);
-      updateScaleTextTitle(gameSize.width, gameSize.height);
-      updateScalebrid1_bg(gameSize.width, gameSize.height);
-    });
+      this.updateTitleScale(gameSize.width, gameSize.height);
+      this.updateBirdScale(gameSize.width, gameSize.height);
 
-    this.birdMainBG.play("flappy");
+      // Thêm xử lý resize cho buttons
+      this.updateButtonScales(gameSize.width, gameSize.height);
+      this.updateMenuPosition(this.getVisibleButtons(this.buttonConfig).length);
+    });
+  }
+
+  private updateButtonScales(width: number, height: number) {
+    // Lặp qua tất cả các button trong ContainerMenu và cập nhật scale
+    this.ContainerMenu.list.forEach((item: any) => {
+      if (item instanceof Phaser.GameObjects.Sprite) {
+        const buttonWidth = item.width;
+        const buttonHeight = item.height;
+        const scaleX = width / buttonWidth;
+        const scaleY = height / buttonHeight;
+        const scale = Math.min(scaleX, scaleY);
+        item.setScale(scale * 0.57);
+      }
+    });
   }
 }
