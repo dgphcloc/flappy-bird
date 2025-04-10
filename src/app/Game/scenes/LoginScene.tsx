@@ -1,10 +1,8 @@
 "use client";
-
-import { cursorTo } from "readline";
 import MenuLoginScene from "./MenuLoginScene";
+import RegisterScene from "./RegisterScene";
 
 export default class LoginScene extends Phaser.Scene {
-  private backgroundLogin!: Phaser.GameObjects.Rectangle;
   private backgroundFrame!: Phaser.GameObjects.Image;
   private LoginContainer!: Phaser.GameObjects.Container;
   private spr_btn_x!: Phaser.GameObjects.Sprite;
@@ -22,6 +20,55 @@ export default class LoginScene extends Phaser.Scene {
   private btnLogin!: Phaser.GameObjects.Sprite;
   constructor() {
     super("LoginScene");
+  }
+
+  public toggleInputsAndIcons(show: boolean) {
+    const usernameInput = document.querySelector(
+      "#username-input-container input"
+    ) as HTMLInputElement;
+    const passwordInput = document.querySelector(
+      "#password-input-container input"
+    ) as HTMLInputElement;
+    const usernameIcon = document.querySelector(
+      "#username-input-container .icon-img"
+    ) as HTMLImageElement;
+    const passwordIcon = document.querySelector(
+      "#password-input-container .icon-img"
+    ) as HTMLImageElement;
+
+    const displayValue = show ? "block" : "none";
+
+    [usernameInput, passwordInput, usernameIcon, passwordIcon].forEach(
+      (element) => {
+        if (element) {
+          element.style.display = displayValue;
+          if (element instanceof HTMLInputElement) {
+            element.blur();
+          }
+        }
+      }
+    );
+  }
+
+  public showLoginContainer() {
+    this.LoginContainer.setVisible(true);
+    this.LoginContainer.setScale(0.1);
+    this.LoginContainer.setAlpha(0);
+    this.toggleInputsAndIcons(false);
+
+    this.tweens.add({
+      targets: this.LoginContainer,
+      x: this.scale.width * 0.5,
+      scale: 1,
+      alpha: 1,
+      duration: 700,
+      ease: "Cubic.easeOut",
+      delay: 200,
+      onComplete: () => {
+        this.toggleInputsAndIcons(true);
+        console.log("Zoom animation completed");
+      },
+    });
   }
 
   create() {
@@ -53,6 +100,7 @@ export default class LoginScene extends Phaser.Scene {
     document.head.appendChild(style);
 
     this.LoginContainer = this.add.container(0, 0);
+    this.LoginContainer.setVisible(false);
     this.createFrame();
     this.createInputFields();
     this.createButtonX();
@@ -71,6 +119,8 @@ export default class LoginScene extends Phaser.Scene {
       this.btnLogin,
     ]);
     this.LoginContainer.setPosition(Width * 0.5, Height * 0.58);
+    this.toggleInputsAndIcons(false);
+
     const screenWidth = this.scale.width;
     const screenHeight = this.scale.height;
     const frameWidth = this.backgroundFrame.displayWidth;
@@ -173,7 +223,10 @@ export default class LoginScene extends Phaser.Scene {
     });
     this.btnSignUp.on("pointerup", () => {
       this.btnSignUp.setFrame(1);
-      console.log("click btnSignUp ");
+      this.toggleInputsAndIcons(false);
+      this.scene.stop("LoginScene");
+      const registerScene = this.scene.get("RegisterScene") as RegisterScene;
+      registerScene.showRegisterContainer();
     });
   }
 
@@ -260,6 +313,7 @@ export default class LoginScene extends Phaser.Scene {
 
     // Tạo icon bằng img element
     const iconImg = document.createElement("img");
+    iconImg.className = "icon-img";
     iconImg.src = "asset/iconUser.png"; // Thay bằng đường dẫn thật của icon của bạn
     iconImg.style.position = "absolute";
     iconImg.style.left = "10px";
@@ -336,6 +390,7 @@ export default class LoginScene extends Phaser.Scene {
     passwordDomElement.setOrigin(0.5, 0.5);
 
     const iconImgPassword = document.createElement("img");
+    iconImgPassword.className = "icon-img";
     iconImgPassword.src = "asset/iconPassword.png";
     iconImgPassword.style.position = "absolute";
     iconImgPassword.style.left = "10px";
@@ -480,12 +535,11 @@ export default class LoginScene extends Phaser.Scene {
       this.spr_btn_x.setFrame(2); // Frame click
     });
     this.spr_btn_x.on("pointerup", () => {
-      this.spr_btn_x.setFrame(1); // Trở về frame hover khi đang hover
-      // Lấy reference đến MenuLoginScene và gọi phương thức showMenu
+      this.spr_btn_x.setFrame(1);
       const menuScene = this.scene.get("MenuLoginScene") as MenuLoginScene;
       menuScene.showMenu();
-      // Tắt scene login
-      this.scene.stop("LoginScene");
+      this.LoginContainer.setVisible(false);
+      this.toggleInputsAndIcons(false);
     });
   }
 }
