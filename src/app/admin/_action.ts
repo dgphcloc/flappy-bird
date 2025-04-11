@@ -12,6 +12,7 @@ type PaginatedQueryOptions<T> = {
   perPage?: number;
   query?: string;
   searchColumns?: (keyof T)[];
+  abortSignal?: AbortSignal;
 };
 
 const getPaginationRange = (page: number, perPage: number) => ({
@@ -25,6 +26,7 @@ export async function fetchPaginatedRecords<T>({
   perPage = 15,
   query = "",
   searchColumns = [],
+  abortSignal,
 }: PaginatedQueryOptions<T>): Promise<PaginatedResult<T> | null> {
   try {
     const supabase = await createSupabaseAdminAuthClient();
@@ -42,6 +44,9 @@ export async function fetchPaginatedRecords<T>({
         .join(",");
 
       queryBuilder = queryBuilder.or(orConditions);
+    }
+    if (abortSignal) {
+      queryBuilder = queryBuilder.abortSignal(abortSignal);
     }
     const { data, count, error } = await queryBuilder;
 
