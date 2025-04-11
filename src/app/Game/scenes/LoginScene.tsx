@@ -1,13 +1,16 @@
 "use client";
 import MenuLoginScene from "./MenuLoginScene";
 import RegisterScene from "./RegisterScene";
-
+import {
+  VIETNAMESE_CHARS_REGEX,
+  VIETNAMESE_AND_SPACE_REGEX,
+  ALLOWED_CHARS_REGEX,
+} from "../constants/regexPatterns";
+import { createInputHandlers } from "../constants/inputUtils";
 export default class LoginScene extends Phaser.Scene {
   private backgroundFrame!: Phaser.GameObjects.Image;
   private LoginContainer!: Phaser.GameObjects.Container;
   private spr_btn_x!: Phaser.GameObjects.Sprite;
-  private usernameInput!: Phaser.GameObjects.Text;
-  private passwordInput!: Phaser.GameObjects.Text;
   private usernameText: string = "";
   private passwordText: string = "";
   private readonly MAX_USERNAME_LENGTH = 10;
@@ -121,6 +124,10 @@ export default class LoginScene extends Phaser.Scene {
         }
       }
     );
+    this.iconFB.setVisible(show);
+    this.iconGG.setVisible(show);
+    this.btnSignUp.setVisible(show);
+    this.btnLogin.setVisible(show);
   }
 
   public showLoginContainer() {
@@ -226,7 +233,7 @@ export default class LoginScene extends Phaser.Scene {
     this.btnSignUp.on("pointerup", () => {
       this.btnSignUp.setFrame(1);
       this.toggleInputsAndIcons(false);
-      this.scene.stop("LoginScene");
+      this.LoginContainer.setVisible(false);
       const registerScene = this.scene.get("RegisterScene") as RegisterScene;
       registerScene.showRegisterContainer();
     });
@@ -260,10 +267,13 @@ export default class LoginScene extends Phaser.Scene {
     const frameHeight = this.backgroundFrame.displayHeight;
 
     // Tạo style chung cho input
+    const widthInput = frameWidth * 0.7;
+    const heightInput = frameHeight * 0.17;
+    const paddingInput = frameHeight * 0.13;
     const inputStyle = {
       position: "absolute",
-      width: `${frameWidth * 0.65}px`,
-      height: `${frameHeight * 0.15}px`,
+      width: `${widthInput}px`,
+      height: `${heightInput}px`,
       fontSize: `${Math.floor(frameHeight * 0.13 * 0.4)}px`,
       fontFamily: "Kavoon",
       color: "#A67943",
@@ -308,15 +318,15 @@ export default class LoginScene extends Phaser.Scene {
     const domContainer = document.createElement("div");
     domContainer.id = "username-input-container";
     domContainer.style.position = "absolute";
-    domContainer.style.width = `${frameWidth * 0.65}px`;
-    domContainer.style.height = `${frameHeight * 0.15}px`;
+    domContainer.style.width = `${widthInput}px`;
+    domContainer.style.height = `${heightInput}px`;
     domContainer.style.zIndex = "1";
     // Thêm DOM container vào game canvas
 
     // Tạo icon bằng img element
     const iconImg = document.createElement("img");
     iconImg.className = "icon-img";
-    iconImg.src = "asset/iconUser.png"; // Thay bằng đường dẫn thật của icon của bạn
+    iconImg.src = "asset/iconUser.png";
     iconImg.style.position = "absolute";
     iconImg.style.left = "10px";
     iconImg.style.top = "50%";
@@ -326,7 +336,7 @@ export default class LoginScene extends Phaser.Scene {
     iconImg.style.zIndex = "2";
 
     // Điều chỉnh padding cho input để tránh chồng lên icon
-    usernameInput.style.paddingLeft = `${frameHeight * 0.1}px`; // Điều chỉnh padding để phù hợp với kích thước icon
+    usernameInput.style.paddingLeft = `${paddingInput}px`;
     domContainer.appendChild(iconImg);
     domContainer.appendChild(usernameInput);
     const domElement = this.add.dom(0, 0, domContainer);
@@ -336,33 +346,20 @@ export default class LoginScene extends Phaser.Scene {
     this.usernameContainer.add([domElement]);
 
     // Thêm event listeners cho input
-    usernameInput.addEventListener("focus", () => {
-      if (usernameInput.value === "") {
-        usernameInput.placeholder = "";
-      }
-    });
-
-    usernameInput.addEventListener("blur", () => {
-      if (usernameInput.value === "") {
-        usernameInput.placeholder = "Username";
-      }
-    });
-
-    usernameInput.addEventListener("input", (e) => {
-      const target = e.target as HTMLInputElement;
-      // Lọc bỏ ký tự tiếng Việt
-      const filteredValue = target.value.replace(
-        /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ]/g,
-        ""
-      );
-      if (filteredValue !== target.value) {
-        target.value = filteredValue;
-      }
-      if (target.value.length <= this.MAX_USERNAME_LENGTH) {
-        this.usernameText = target.value;
-      }
-    });
-
+    createInputHandlers(
+      usernameInput,
+      () => {
+        this.activeInput = "username";
+      },
+      () => {
+        this.activeInput = null;
+      },
+      (value) => {
+        this.usernameText = value;
+        console.log("Username updated:", this.usernameText);
+      },
+      this.MAX_USERNAME_LENGTH
+    );
     // Thêm container vào LoginContainer chính
     this.LoginContainer.add(this.usernameContainer);
 
@@ -385,8 +382,8 @@ export default class LoginScene extends Phaser.Scene {
     const passwordDomContainer = document.createElement("div");
     passwordDomContainer.id = "password-input-container";
     passwordDomContainer.style.position = "absolute";
-    passwordDomContainer.style.width = `${frameWidth * 0.65}px`;
-    passwordDomContainer.style.height = `${frameHeight * 0.15}px`;
+    passwordDomContainer.style.width = `${widthInput}px`;
+    passwordDomContainer.style.height = `${heightInput}px`;
     // Thêm DOM container vào game canvas
     const passwordDomElement = this.add.dom(0, 0, passwordDomContainer);
     passwordDomElement.setOrigin(0.5, 0.5);
@@ -402,40 +399,27 @@ export default class LoginScene extends Phaser.Scene {
     iconImgPassword.style.width = "auto";
     iconImgPassword.style.zIndex = "2";
 
-    passwordInput.style.paddingLeft = `${frameHeight * 0.1}px`;
+    passwordInput.style.paddingLeft = `${paddingInput}px`;
     passwordDomContainer.appendChild(iconImgPassword);
     passwordDomContainer.appendChild(passwordInput);
 
     this.passwordContainer.add([passwordDomElement]);
 
     // Thêm event listeners cho password input
-    passwordInput.addEventListener("focus", () => {
-      if (passwordInput.value === "") {
-        passwordInput.placeholder = "";
-      }
-    });
-
-    passwordInput.addEventListener("blur", () => {
-      if (passwordInput.value === "") {
-        passwordInput.placeholder = "Password";
-      }
-    });
-
-    passwordInput.addEventListener("input", (e) => {
-      const target = e.target as HTMLInputElement;
-      // Lọc bỏ ký tự tiếng Việt
-      const filteredValue = target.value.replace(
-        /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ]/g,
-        ""
-      );
-      if (filteredValue !== target.value) {
-        target.value = filteredValue;
-      }
-      if (target.value.length <= this.MAX_PASSWORD_LENGTH) {
-        this.passwordText = target.value;
-      }
-    });
-
+    createInputHandlers(
+      passwordInput,
+      () => {
+        this.activeInput = "password";
+      },
+      () => {
+        this.activeInput = null;
+      },
+      (value) => {
+        this.passwordText = value;
+        console.log("Password updated:", this.passwordText);
+      },
+      this.MAX_PASSWORD_LENGTH
+    );
     // Thêm container vào LoginContainer chính
     this.LoginContainer.add(this.passwordContainer);
   }
@@ -446,79 +430,66 @@ export default class LoginScene extends Phaser.Scene {
     if (!this.activeInput) return;
 
     // Kiểm tra nếu là ký tự tiếng Việt hoặc dấu
-    if (
-      event.key.match(
-        /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ\u0300\u0301\u0303\u0309\u0323]/
-      )
-    ) {
+    if (event.key.match(VIETNAMESE_CHARS_REGEX)) {
       return; // Ngăn chặn nhập ký tự tiếng Việt
     }
 
     if (event.key === "Backspace") {
       if (this.activeInput === "username") {
         this.usernameText = this.usernameText.slice(0, -1);
-        this.usernameInput.setText(this.usernameText);
       } else {
         this.passwordText = this.passwordText.slice(0, -1);
-        this.passwordInput.setText("*".repeat(this.passwordText.length));
       }
     } else if (event.key === "Enter") {
-      this.handleLogin(this.usernameText, this.passwordText);
+      console.log("username", this.usernameText);
+      console.log("password", this.passwordText);
+      // this.handleLogin(this.usernameText, this.passwordText);
     } else if (event.key.length === 1) {
       // Chỉ cho phép nhập chữ cái, số và một số ký tự đặc biệt
-      if (
-        event.key.match(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/)
-      ) {
+      if (event.key.match(ALLOWED_CHARS_REGEX)) {
         if (this.activeInput === "username") {
           if (this.usernameText.length < this.MAX_USERNAME_LENGTH) {
             this.usernameText += event.key;
-            this.usernameInput.setText(this.usernameText);
           }
         } else {
           if (this.passwordText.length < this.MAX_PASSWORD_LENGTH) {
             this.passwordText += event.key;
-            this.passwordInput.setText("*".repeat(this.passwordText.length));
           }
         }
       }
     }
   }
 
-  private handleLogin(username: string, password: string) {
-    console.log("Login attempt:", username, password);
+  // private handleLogin(username: string, password: string) {
+  //   console.log("Login attempt:", username, password);
 
-    if (username && password) {
-      const menuScene = this.scene.get("MenuLoginScene") as MenuLoginScene;
-      menuScene.showMenu();
-      this.scene.stop("LoginScene");
-    } else {
-      // Hiển thị thông báo lỗi
-      const errorText = this.add.text(
-        0,
-        this.backgroundFrame.displayHeight / 2,
-        "Please enter both username and password",
-        { font: "20px Arial", color: "#ff0000" }
-      );
-      errorText.setOrigin(0.5);
+  //   if (username && password) {
+  //     const menuScene = this.scene.get("MenuLoginScene") as MenuLoginScene;
+  //     menuScene.showMenu();
+  //     this.LoginContainer.setVisible(false);
+  //   } else {
+  //     // Hiển thị thông báo lỗi
+  //     const errorText = this.add.text(
+  //       0,
+  //       this.backgroundFrame.displayHeight / 2,
+  //       "Please enter both username and password",
+  //       { font: "20px Arial", color: "#ff0000" }
+  //     );
+  //     errorText.setOrigin(0.5);
 
-      // Xóa thông báo lỗi sau 2 giây
-      this.time.delayedCall(2000, () => {
-        errorText.destroy();
-      });
-    }
-  }
+  //     // Xóa thông báo lỗi sau 2 giây
+  //     this.time.delayedCall(2000, () => {
+  //       errorText.destroy();
+  //     });
+  //   }
+  // }
 
   private createButtonX() {
     this.spr_btn_x = this.physics.add.sprite(0, 0, "spr_btn_x", 0);
     this.spr_btn_x.setOrigin(0.5);
-
-    const frameWidth = this.backgroundFrame.displayWidth;
-    const frameHeight = this.backgroundFrame.displayHeight;
-
-    const padding = 10;
     this.spr_btn_x.setPosition(
-      frameWidth / 2.1 - padding,
-      -frameHeight / 2.55 + padding
+      this.backgroundFrame.width / 2.2,
+      -this.backgroundFrame.height / 2.63
     );
     this.spr_btn_x.setScale(0.7);
 

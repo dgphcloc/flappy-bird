@@ -1,5 +1,6 @@
 "use client";
 import LoginScene from "./LoginScene";
+import RegisterScene from "./RegisterScene";
 export default class MenuLoginScene extends Phaser.Scene {
   // Game objects
   private birdMainBG!: Phaser.GameObjects.Sprite;
