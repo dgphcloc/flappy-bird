@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Box, Center, Flex } from '@mantine/core';
+import { useEffect, useState } from "react";
+import { Box, Center, Flex } from "@mantine/core";
 
-import TableMantine, { TableDataRequired } from '@/components/table/table';
-import PaginationMantine from '@/components/pagination/pagination';
-import SkeletonStack from '@/components/skeletonStack/skeletonStack';
-import PaginationInfoLabel from '@/components/paginationInfoLabel/paginationInfoLabel';
-import PageSizeSelector from '@/components/pageSizeSelector/pageSizeSelector';
+import TableMantine, { TableDataRequired } from "@/components/table/table";
+import PaginationMantine from "@/components/pagination/pagination";
+import SkeletonStack from "@/components/skeletonStack/skeletonStack";
+import PaginationInfoLabel from "@/components/paginationInfoLabel/paginationInfoLabel";
+import PageSizeSelector from "@/components/pageSizeSelector/pageSizeSelector";
 
-import { fetchUsersByPage, PaginatedUserResult } from '../_action';
-import { UserRecord } from '@/type/type';
+import { fetchUsersByPage, PaginatedResult } from "../_action";
+import { UserRecord } from "@/type/type";
 
 export default function UserFeatPage() {
   const [userRecord, setUserRecord] = useState<UserRecord[] | null>(null);
@@ -29,10 +29,10 @@ export default function UserFeatPage() {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      const { data, total } = await fetchUsersByPage(
+      const { data, total } = (await fetchUsersByPage(
         currentPage,
         perPage
-      ) as PaginatedUserResult;
+      )) as PaginatedResult<UserRecord>;
 
       if (data && total > 0) {
         setUserRecord(data);
@@ -48,19 +48,19 @@ export default function UserFeatPage() {
 
   const tableData: TableDataRequired = {
     head: [
-      'id',
-      'username',
-      'avatar',
-      'score',
-      'created at',
-      'updated at',
-      'last updated score',
+      "id",
+      "username",
+      "avatar",
+      "score",
+      "created at",
+      "updated at",
+      "last updated score",
     ],
     body: userRecord.map((user) => [
       user.id,
-      user.username ?? 'NULL',
-      user.avatar_url ?? 'NULL',
-      user.score ?? 'score',
+      user.username ?? "NULL",
+      user.avatar_url ?? "NULL",
+      user.score ?? "score",
       user.created_at,
       user.updated_at,
       user.last_updated_score,

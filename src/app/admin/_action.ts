@@ -1,28 +1,69 @@
 import createSupabaseAdminAuthClient from "@/lib/supabase/admin";
 import { UserRecord } from "@/type/type";
-export type PaginatedUserResult = {
-  data: UserRecord[];
+
+export type PaginatedResult<T> = {
+  data: T[];
   total: number;
 };
 
-export async function fetchUsersByPage(page:number,perPage = 15): Promise<PaginatedUserResult| null>{
-    console.log('fetch user trang',page)
-    const supabase = await createSupabaseAdminAuthClient();
-  const from:number = (page - 1) * perPage;
-  const to :number = from + perPage - 1;
+type PaginatedQueryOptions<T> = {
+  tableName: string;
+  page: number;
+  perPage?: number;
+  query?: string;
+  searchColumns?: (keyof T)[];
+};
 
-  const { data,count, error } = await supabase
-  .from('UserProfile')
-  .select('*',{ count: "exact" })
-  .range(from,to);
-  console.log(`co tong ${count} record`)
-  if (error) {
-    console.error("Lỗi:", error);
-    return null;
-  } else {
-    return {
-      data: data as UserRecord[],
-      total: count ?? 0,
+const getPaginationRange = (page: number, perPage: number) => ({
+  from: (page - 1) * perPage,
+  to: (page - 1) * perPage + perPage - 1,
+});
+
+export async function fetchPaginatedRecords<T>({
+  tableName,
+  page = 1,
+  perPage = 15,
+  query = "",
+  searchColumns = [],
+}: PaginatedQueryOptions<T>): Promise<PaginatedResult<T> | null> {
+  try {
+    const supabase = await createSupabaseAdminAuthClient();
+    const { from, to } = getPaginationRange(page, perPage);
+
+    let queryBuilder = supabase
+      .from(tableName)
+      .select("*", { count: "exact" })
+      .range(from, to);
+
+    if (query && searchColumns.length > 0) {
+      const searchPattern = `%${query}%`;
+      const orConditions = searchColumns
+        .map((column) => `${String(column)}.ilike.${searchPattern}`)
+        .join(",");
+
+      queryBuilder = queryBuilder.or(orConditions);
     }
+    const { data, count, error } = await queryBuilder;
+
+    if (error) throw error;
+
+    return {
+      data: data as T[],
+      total: count ?? 0,
+    };
+  } catch (error) {
+    return null;
   }
+}
+
+export async function fetchUsersByPage(
+  page: number,
+  perPage = 15
+): Promise<PaginatedResult<UserRecord> | null> {
+  return fetchPaginatedRecords<UserRecord>({
+    tableName: "UserProfile",
+    page,
+    perPage,
+    searchColumns: ["name" as keyof UserRecord, "email" as keyof UserRecord],
+  });
 }
