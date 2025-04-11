@@ -21,56 +21,6 @@ export default class LoginScene extends Phaser.Scene {
   constructor() {
     super("LoginScene");
   }
-
-  public toggleInputsAndIcons(show: boolean) {
-    const usernameInput = document.querySelector(
-      "#username-input-container input"
-    ) as HTMLInputElement;
-    const passwordInput = document.querySelector(
-      "#password-input-container input"
-    ) as HTMLInputElement;
-    const usernameIcon = document.querySelector(
-      "#username-input-container .icon-img"
-    ) as HTMLImageElement;
-    const passwordIcon = document.querySelector(
-      "#password-input-container .icon-img"
-    ) as HTMLImageElement;
-
-    const displayValue = show ? "block" : "none";
-
-    [usernameInput, passwordInput, usernameIcon, passwordIcon].forEach(
-      (element) => {
-        if (element) {
-          element.style.display = displayValue;
-          if (element instanceof HTMLInputElement) {
-            element.blur();
-          }
-        }
-      }
-    );
-  }
-
-  public showLoginContainer() {
-    this.LoginContainer.setVisible(true);
-    this.LoginContainer.setScale(0.1);
-    this.LoginContainer.setAlpha(0);
-    this.toggleInputsAndIcons(false);
-
-    this.tweens.add({
-      targets: this.LoginContainer,
-      x: this.scale.width * 0.5,
-      scale: 1,
-      alpha: 1,
-      duration: 700,
-      ease: "Cubic.easeOut",
-      delay: 200,
-      onComplete: () => {
-        this.toggleInputsAndIcons(true);
-        console.log("Zoom animation completed");
-      },
-    });
-  }
-
   create() {
     const Width = this.scale.width;
     const Height = this.scale.height;
@@ -121,14 +71,7 @@ export default class LoginScene extends Phaser.Scene {
     this.LoginContainer.setPosition(Width * 0.5, Height * 0.58);
     this.toggleInputsAndIcons(false);
 
-    const screenWidth = this.scale.width;
-    const screenHeight = this.scale.height;
-    const frameWidth = this.backgroundFrame.displayWidth;
-    const frameHeight = this.backgroundFrame.displayHeight;
-    const scaleX = screenWidth / frameWidth;
-    const scaleY = screenHeight / frameHeight;
-    const scale = Math.min(scaleX, scaleY);
-    this.LoginContainer.setScale(scale * 0.7);
+    this.LoginContainer.setScale(this.scaleLoginContainer());
     // Thêm sự kiện click bên ngoài để tắt bàn phím ảo
     document.addEventListener("click", (event) => {
       const usernameInput = document.querySelector(
@@ -150,6 +93,65 @@ export default class LoginScene extends Phaser.Scene {
     if (this.input && this.input.keyboard) {
       this.input.keyboard.on("keydown", this.handleKeyDown, this);
     }
+  }
+
+  public toggleInputsAndIcons(show: boolean) {
+    const usernameInput = document.querySelector(
+      "#username-input-container input"
+    ) as HTMLInputElement;
+    const passwordInput = document.querySelector(
+      "#password-input-container input"
+    ) as HTMLInputElement;
+    const usernameIcon = document.querySelector(
+      "#username-input-container .icon-img"
+    ) as HTMLImageElement;
+    const passwordIcon = document.querySelector(
+      "#password-input-container .icon-img"
+    ) as HTMLImageElement;
+
+    const displayValue = show ? "block" : "none";
+
+    [usernameInput, passwordInput, usernameIcon, passwordIcon].forEach(
+      (element) => {
+        if (element) {
+          element.style.display = displayValue;
+          if (element instanceof HTMLInputElement) {
+            element.blur();
+          }
+        }
+      }
+    );
+  }
+
+  public showLoginContainer() {
+    this.LoginContainer.setVisible(true);
+    this.LoginContainer.setScale(0.1);
+    this.LoginContainer.setAlpha(0);
+    this.toggleInputsAndIcons(false);
+
+    this.tweens.add({
+      targets: this.LoginContainer,
+      x: this.scale.width * 0.5,
+      scale: this.scaleLoginContainer(),
+      alpha: 1,
+      duration: 700,
+      ease: "Cubic.easeOut",
+      delay: 200,
+      onComplete: () => {
+        this.toggleInputsAndIcons(true);
+        console.log("Zoom animation completed");
+      },
+    });
+  }
+  private scaleLoginContainer() {
+    const screenWidth = this.scale.width;
+    const screenHeight = this.scale.height;
+    const frameWidth = this.backgroundFrame.displayWidth;
+    const frameHeight = this.backgroundFrame.displayHeight;
+    const scaleX = screenWidth / frameWidth;
+    const scaleY = screenHeight / frameHeight;
+    const scale = Math.min(scaleX, scaleY);
+    return scale * 0.7;
   }
 
   private createFrame() {
