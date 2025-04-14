@@ -7,13 +7,15 @@ import {
   ALLOWED_CHARS_REGEX,
 } from "../constants/regexPatterns";
 import { createInputHandlers } from "../constants/inputUtils";
+import { ErrorCodes, ErrorMessages } from "@/app/shared/errorMessages";
+
 export default class LoginScene extends Phaser.Scene {
   private backgroundFrame!: Phaser.GameObjects.Image;
   private LoginContainer!: Phaser.GameObjects.Container;
   private spr_btn_x!: Phaser.GameObjects.Sprite;
   private usernameText: string = "";
   private passwordText: string = "";
-  private readonly MAX_USERNAME_LENGTH = 10;
+  private readonly MAX_USERNAME_LENGTH = 15;
   private readonly MAX_PASSWORD_LENGTH = 10;
   private usernameContainer!: Phaser.GameObjects.Container;
   private passwordContainer!: Phaser.GameObjects.Container;
@@ -21,6 +23,9 @@ export default class LoginScene extends Phaser.Scene {
   private iconFB!: Phaser.GameObjects.Sprite;
   private btnSignUp!: Phaser.GameObjects.Sprite;
   private btnLogin!: Phaser.GameObjects.Sprite;
+  private errorText: Phaser.GameObjects.Text | null = null;
+  private successText: Phaser.GameObjects.Text | null = null;
+  private loadingText: Phaser.GameObjects.Text | null = null;
   constructor() {
     super("LoginScene");
   }
@@ -146,7 +151,6 @@ export default class LoginScene extends Phaser.Scene {
       delay: 200,
       onComplete: () => {
         this.toggleInputsAndIcons(true);
-        console.log("Zoom animation completed");
       },
     });
   }
@@ -258,7 +262,7 @@ export default class LoginScene extends Phaser.Scene {
     });
     this.btnLogin.on("pointerup", () => {
       this.btnLogin.setFrame(1);
-      console.log("click btnLogin ");
+      this.handleLogin();
     });
   }
 
@@ -356,7 +360,6 @@ export default class LoginScene extends Phaser.Scene {
       },
       (value) => {
         this.usernameText = value;
-        console.log("Username updated:", this.usernameText);
       },
       this.MAX_USERNAME_LENGTH
     );
@@ -416,7 +419,6 @@ export default class LoginScene extends Phaser.Scene {
       },
       (value) => {
         this.passwordText = value;
-        console.log("Password updated:", this.passwordText);
       },
       this.MAX_PASSWORD_LENGTH
     );
@@ -441,9 +443,7 @@ export default class LoginScene extends Phaser.Scene {
         this.passwordText = this.passwordText.slice(0, -1);
       }
     } else if (event.key === "Enter") {
-      console.log("username", this.usernameText);
-      console.log("password", this.passwordText);
-      // this.handleLogin(this.usernameText, this.passwordText);
+      this.handleLogin();
     } else if (event.key.length === 1) {
       // Chỉ cho phép nhập chữ cái, số và một số ký tự đặc biệt
       if (event.key.match(ALLOWED_CHARS_REGEX)) {
@@ -460,29 +460,42 @@ export default class LoginScene extends Phaser.Scene {
     }
   }
 
-  // private handleLogin(username: string, password: string) {
-  //   console.log("Login attempt:", username, password);
+  private handleLogin = async () => {
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: this.usernameText,
+          password: this.passwordText,
+        }),
+      });
 
-  //   if (username && password) {
-  //     const menuScene = this.scene.get("MenuLoginScene") as MenuLoginScene;
-  //     menuScene.showMenu();
-  //     this.LoginContainer.setVisible(false);
-  //   } else {
-  //     // Hiển thị thông báo lỗi
-  //     const errorText = this.add.text(
-  //       0,
-  //       this.backgroundFrame.displayHeight / 2,
-  //       "Please enter both username and password",
-  //       { font: "20px Arial", color: "#ff0000" }
-  //     );
-  //     errorText.setOrigin(0.5);
+      const data = await response.json();
+      console.log("Login response:", data);
 
-  //     // Xóa thông báo lỗi sau 2 giây
-  //     this.time.delayedCall(2000, () => {
-  //       errorText.destroy();
-  //     });
-  //   }
-  // }
+      if (data.error) {
+        this.showError(data.error.message);
+        return;
+      }
+
+      // Update isLoggedIn in MenuLoginScene
+      const menuLoginScene = this.scene.get("MenuLoginScene") as MenuLoginScene;
+      if (menuLoginScene) {
+        menuLoginScene.isLoggedInChange(true);
+      }
+
+      // Chuyển đến màn hình chính
+      menuLoginScene.showMenu();
+      this.LoginContainer.setVisible(false);
+      this.toggleInputsAndIcons(false);
+    } catch (error) {
+      console.error("Login error:", error);
+      this.showError("Lỗi đăng nhập. Vui lòng thử lại.");
+    }
+  };
 
   private createButtonX() {
     this.spr_btn_x = this.physics.add.sprite(0, 0, "spr_btn_x", 0);
@@ -514,5 +527,91 @@ export default class LoginScene extends Phaser.Scene {
       this.LoginContainer.setVisible(false);
       this.toggleInputsAndIcons(false);
     });
+  }
+
+  private showError(message: string) {
+    if (this.errorText) {
+      this.errorText.destroy();
+    }
+
+    this.errorText = this.add.text(0, 0, message, {
+      fontFamily: "Kavoon",
+      fontSize: "20px",
+      color: "#FF0000",
+      align: "center",
+    });
+
+    this.errorText.setOrigin(0.5);
+    this.errorText.setPosition(0, this.backgroundFrame.displayHeight * 0.6);
+    this.LoginContainer.add(this.errorText);
+
+    this.time.delayedCall(3000, () => {
+      if (this.errorText) {
+        this.errorText.destroy();
+        this.errorText = null;
+      }
+    });
+  }
+
+  private showSuccess(message: string) {
+    if (this.successText) {
+      this.successText.destroy();
+    }
+
+    this.successText = this.add.text(0, 0, message, {
+      fontFamily: "Kavoon",
+      fontSize: "20px",
+      color: "#00FF00",
+      align: "center",
+    });
+
+    this.successText.setOrigin(0.5);
+    this.successText.setPosition(0, this.backgroundFrame.displayHeight * 0.6);
+    this.LoginContainer.add(this.successText);
+
+    this.time.delayedCall(2000, () => {
+      if (this.successText) {
+        this.successText.destroy();
+        this.successText = null;
+      }
+    });
+  }
+
+  private showLoading() {
+    if (this.loadingText) {
+      this.loadingText.destroy();
+    }
+
+    this.loadingText = this.add.text(0, 0, "Đang đăng nhập...", {
+      fontFamily: "Kavoon",
+      fontSize: "20px",
+      color: "#FFFFFF",
+      align: "center",
+    });
+
+    this.loadingText.setOrigin(0.5);
+    this.loadingText.setPosition(0, this.backgroundFrame.displayHeight * 0.6);
+    this.LoginContainer.add(this.loadingText);
+  }
+
+  private hideLoading() {
+    if (this.loadingText) {
+      this.loadingText.destroy();
+      this.loadingText = null;
+    }
+  }
+
+  private disableLoginButton(seconds: number) {
+    if (this.btnLogin) {
+      this.btnLogin.setInteractive(false);
+      this.btnLogin.setAlpha(0.5);
+
+      this.time.delayedCall(seconds * 1000, () => {
+        if (this.btnLogin) {
+          this.btnLogin.setInteractive(true);
+          this.btnLogin.setAlpha(1);
+        }
+      });
+    }
   }
 }

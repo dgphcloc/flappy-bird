@@ -11,6 +11,7 @@ export default class MenuLoginScene extends Phaser.Scene {
 
   // State
   private isLoggedIn: boolean = false;
+
   private buttonConfig: any[] = [
     { name: "login", frameIndex: 0, alwaysShow: false },
     { name: "play", frameIndex: 4, alwaysShow: false },
@@ -36,6 +37,21 @@ export default class MenuLoginScene extends Phaser.Scene {
     }
   }
 
+  public isLoggedInChange(value: boolean) {
+    this.isLoggedIn = value;
+
+    // Xóa toàn bộ container menu cũ
+    if (this.ContainerMenu) {
+      this.ContainerMenu.destroy();
+      this.ContainerMenu = this.add.container(
+        this.scale.width,
+        this.scale.height
+      );
+    }
+
+    this.createMenuButtons();
+    console.log("isLoggedIn", this.isLoggedIn);
+  }
   // Scene lifecycle methods
   create() {
     const ScaleWidth = this.scale.width;
@@ -44,16 +60,12 @@ export default class MenuLoginScene extends Phaser.Scene {
     // Launch required scenes
     this.launchRequiredScenes();
 
-    // Create UI elements
-    // this.createBackgroundMenu(ScaleWidth, ScaleHeight);
     this.createMenuContainer(ScaleWidth, ScaleHeight);
     this.createMenuButtons();
     this.createBirdImageContainer(ScaleWidth, ScaleHeight);
 
-    // Set up event listeners
     this.setupResizeListener(ScaleWidth, ScaleHeight);
 
-    // Start bird animation
     this.birdMainBG.play("flappy");
   }
 
@@ -277,7 +289,6 @@ export default class MenuLoginScene extends Phaser.Scene {
       this.updateTitleScale(gameSize.width, gameSize.height);
       this.updateBirdScale(gameSize.width, gameSize.height);
 
-      // Thêm xử lý resize cho buttons
       this.updateButtonScales(gameSize.width, gameSize.height);
       this.updateMenuPosition(this.getVisibleButtons(this.buttonConfig).length);
     });

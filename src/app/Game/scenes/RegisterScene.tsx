@@ -7,6 +7,10 @@ import {
 } from "../constants/regexPatterns";
 import { createInputHandlers } from "../constants/inputUtils";
 import LoginScene from "./LoginScene";
+import { ErrorCodes, ErrorMessages } from "@/app/shared/errorMessages";
+import { signUpWithUsernameAndPassword } from "@/app/shared/_action";
+import { Body } from "matter";
+
 export default class RegisterScene extends Phaser.Scene {
   private RegisterContainer!: Phaser.GameObjects.Container;
   private InputContainer!: Phaser.GameObjects.Container;
@@ -16,10 +20,13 @@ export default class RegisterScene extends Phaser.Scene {
   private btnRegister!: Phaser.GameObjects.Sprite;
   private btnLoginBack!: Phaser.GameObjects.Sprite;
   private btnX!: Phaser.GameObjects.Sprite;
-  private maxLengInput: number = 10;
+  private maxLengInput: number = 15;
   private usernameText: string = "";
   private passwordText: string = "";
   private passwordComfirmText: string = "";
+  private errorText: Phaser.GameObjects.Text | null = null;
+  private successText: Phaser.GameObjects.Text | null = null;
+  private loadingText: Phaser.GameObjects.Text | null = null;
   private activeInput: "username" | "password" | "password-comfirm" | null =
     null;
 
@@ -365,14 +372,14 @@ export default class RegisterScene extends Phaser.Scene {
     if (event.key === "Backspace") {
       if (this.activeInput === "username") {
         this.usernameText = this.usernameText.slice(0, -1);
-      } else {
+      } else if (this.activeInput === "password") {
         this.passwordText = this.passwordText.slice(0, -1);
+      } else if (this.activeInput === "password-comfirm") {
+        this.passwordComfirmText = this.passwordComfirmText.slice(0, -1);
       }
     } else if (event.key === "Enter") {
-      console.log("Register attempt:", {
-        username: this.usernameText,
-        password: this.passwordText,
-      });
+      // Không làm gì khi nhấn Enter
+      return;
     } else if (event.key.length === 1) {
       // Chỉ cho phép nhập chữ cái, số và một số ký tự đặc biệt
       if (event.key.match(ALLOWED_CHARS_REGEX)) {
@@ -380,12 +387,184 @@ export default class RegisterScene extends Phaser.Scene {
           if (this.usernameText.length < this.maxLengInput) {
             this.usernameText += event.key;
           }
-        } else {
+        } else if (this.activeInput === "password") {
           if (this.passwordText.length < this.maxLengInput) {
             this.passwordText += event.key;
           }
+        } else if (this.activeInput === "password-comfirm") {
+          if (this.passwordComfirmText.length < this.maxLengInput) {
+            this.passwordComfirmText += event.key;
+          }
         }
       }
+    }
+  }
+
+  private async handleRegister() {
+    try {
+      // Trim whitespace from all fields
+      // const username = this.usernameText.trim();
+      // const password = this.passwordText.trim();
+      // const passwordConfirm = this.passwordComfirmText.trim();
+
+      // if (!username || !password || !passwordConfirm) {
+      //   this.showError(ErrorMessages[ErrorCodes.EMPTY_FIELDS]);
+      //   return;
+      // }
+
+      // // Kiểm tra mật khẩu xác nhận
+      // if (password !== passwordConfirm) {
+      //   console.log("Debug password comparison:");
+      //   console.log("Password:", password);
+      //   console.log("Password Confirm:", passwordConfirm);
+      //   console.log("Length password:", password.length);
+      //   console.log("Length password confirm:", passwordConfirm.length);
+      //   this.showError(ErrorMessages[ErrorCodes.PASSWORD_NOT_MATCH]);
+      //   return;
+      // }
+
+      // // Kiểm tra độ dài mật khẩu
+      // if (password.length < 6) {
+      //   this.showError(ErrorMessages[ErrorCodes.PASSWORD_TOO_SHORT]);
+      //   return;
+      // }
+
+      // // Kiểm tra định dạng username
+      // const usernameRegex = /^[a-zA-Z0-9_]+$/;
+      // if (!usernameRegex.test(username)) {
+      //   this.showError(ErrorMessages[ErrorCodes.INVALID_USERNAME]);
+      //   return;
+      // }
+
+      // Hiển thị loading
+      this.showLoading();
+
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: this.usernameText,
+          password: this.passwordText,
+          passwordConfirm: this.passwordComfirmText,
+        }),
+      });
+
+      const registerResult = await response.json();
+      console.log("registerResult:", registerResult);
+
+      // Ẩn loading
+      this.hideLoading();
+
+      if (registerResult.error) {
+        // Hiển thị thông báo lỗi từ server
+        this.showError(registerResult.message);
+
+        // Xử lý các trường hợp đặc biệt
+        if (registerResult.error === ErrorCodes.USERNAME_EXISTS) {
+          // Có thể thêm xử lý đặc biệt cho username đã tồn tại
+          this.usernameText = "";
+          const usernameInput = document.querySelector(
+            "#username-input-container .input-show"
+          ) as HTMLInputElement;
+          if (usernameInput) {
+            usernameInput.value = "";
+            usernameInput.focus();
+          }
+        }
+      } else {
+        // Đăng ký thành công
+        this.showSuccess("Đăng ký thành công!");
+
+        // Reset form
+        this.usernameText = "";
+        this.passwordText = "";
+        this.passwordComfirmText = "";
+
+        // Chờ 2 giây rồi chuyển về scene đăng nhập
+        this.time.delayedCall(2000, () => {
+          this.RegisterContainer.setVisible(false);
+          this.toggleInputsAndIcons(false);
+          const loginScene = this.scene.get("LoginScene") as LoginScene;
+          loginScene.showLoginContainer();
+        });
+      }
+    } catch (error) {
+      this.hideLoading();
+      this.showError(ErrorMessages[ErrorCodes.NETWORK_ERROR]);
+    }
+  }
+
+  private showError(message: string) {
+    if (this.errorText) {
+      this.errorText.destroy();
+    }
+
+    this.errorText = this.add.text(0, 0, message, {
+      fontFamily: "Kavoon",
+      fontSize: "20px",
+      color: "#FF0000",
+      align: "center",
+    });
+
+    this.errorText.setOrigin(0.5);
+    this.errorText.setPosition(0, this.backgroundFrame.displayHeight * 0.6);
+    this.RegisterContainer.add(this.errorText);
+
+    this.time.delayedCall(3000, () => {
+      if (this.errorText) {
+        this.errorText.destroy();
+        this.errorText = null;
+      }
+    });
+  }
+
+  private showSuccess(message: string) {
+    if (this.successText) {
+      this.successText.destroy();
+    }
+
+    this.successText = this.add.text(0, 0, message, {
+      fontFamily: "Kavoon",
+      fontSize: "20px",
+      color: "#00FF00",
+      align: "center",
+    });
+
+    this.successText.setOrigin(0.5);
+    this.successText.setPosition(0, this.backgroundFrame.displayHeight * 0.6);
+    this.RegisterContainer.add(this.successText);
+
+    this.time.delayedCall(2000, () => {
+      if (this.successText) {
+        this.successText.destroy();
+        this.successText = null;
+      }
+    });
+  }
+
+  private showLoading() {
+    if (this.loadingText) {
+      this.loadingText.destroy();
+    }
+
+    this.loadingText = this.add.text(0, 0, "Đang đăng ký...", {
+      fontFamily: "Kavoon",
+      fontSize: "20px",
+      color: "#FFFFFF",
+      align: "center",
+    });
+
+    this.loadingText.setOrigin(0.5);
+    this.loadingText.setPosition(0, this.backgroundFrame.displayHeight * 0.6);
+    this.RegisterContainer.add(this.loadingText);
+  }
+
+  private hideLoading() {
+    if (this.loadingText) {
+      this.loadingText.destroy();
+      this.loadingText = null;
     }
   }
 
@@ -407,9 +586,9 @@ export default class RegisterScene extends Phaser.Scene {
     this.btnRegister.on("pointerdown", () => {
       this.btnRegister.setFrame(2);
     });
-    this.btnRegister.on("pointerup", () => {
+    this.btnRegister.on("pointerup", async () => {
       this.btnRegister.setFrame(1);
-      console.log("Register");
+      await this.handleRegister();
     });
   }
 
