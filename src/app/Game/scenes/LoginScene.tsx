@@ -151,7 +151,6 @@ export default class LoginScene extends Phaser.Scene {
       delay: 200,
       onComplete: () => {
         this.toggleInputsAndIcons(true);
-        console.log("Zoom animation completed");
       },
     });
   }
@@ -361,7 +360,6 @@ export default class LoginScene extends Phaser.Scene {
       },
       (value) => {
         this.usernameText = value;
-        console.log("Username updated:", this.usernameText);
       },
       this.MAX_USERNAME_LENGTH
     );
@@ -421,7 +419,6 @@ export default class LoginScene extends Phaser.Scene {
       },
       (value) => {
         this.passwordText = value;
-        console.log("Password updated:", this.passwordText);
       },
       this.MAX_PASSWORD_LENGTH
     );
@@ -446,8 +443,6 @@ export default class LoginScene extends Phaser.Scene {
         this.passwordText = this.passwordText.slice(0, -1);
       }
     } else if (event.key === "Enter") {
-      console.log("username", this.usernameText);
-      console.log("password", this.passwordText);
       this.handleLogin();
     } else if (event.key.length === 1) {
       // Chỉ cho phép nhập chữ cái, số và một số ký tự đặc biệt
@@ -465,16 +460,8 @@ export default class LoginScene extends Phaser.Scene {
     }
   }
 
-  private async handleLogin() {
+  private handleLogin = async () => {
     try {
-      if (!this.usernameText || !this.passwordText) {
-        this.showError(ErrorMessages[ErrorCodes.EMPTY_FIELDS]);
-        return;
-      }
-
-      // Hiển thị loading
-      this.showLoading();
-
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
@@ -486,32 +473,29 @@ export default class LoginScene extends Phaser.Scene {
         }),
       });
 
-      const loginResult = await response.json();
+      const data = await response.json();
+      console.log("Login response:", data);
 
-      // Ẩn loading
-      this.hideLoading();
-
-      if (loginResult.error) {
-        // Hiển thị thông báo lỗi từ server
-        this.showError(loginResult.message);
-
-        // Xử lý các trường hợp đặc biệt
-        if (loginResult.error === ErrorCodes.ACCOUNT_DISABLED) {
-          // Có thể thêm xử lý đặc biệt cho tài khoản bị khóa
-        } else if (loginResult.error === ErrorCodes.TOO_MANY_ATTEMPTS) {
-          // Có thể disable nút đăng nhập trong một thời gian
-          this.disableLoginButton(30); // 30 giây
-        }
-      } else {
-        // Đăng nhập thành công
-        this.showSuccess("Đăng nhập thành công!");
-        this.scene.start("MenuScene");
+      if (data.error) {
+        this.showError(data.error.message);
+        return;
       }
+
+      // Update isLoggedIn in MenuLoginScene
+      const menuLoginScene = this.scene.get("MenuLoginScene") as MenuLoginScene;
+      if (menuLoginScene) {
+        menuLoginScene.isLoggedInChange(true);
+      }
+
+      // Chuyển đến màn hình chính
+      menuLoginScene.showMenu();
+      this.LoginContainer.setVisible(false);
+      this.toggleInputsAndIcons(false);
     } catch (error) {
-      this.hideLoading();
-      this.showError(ErrorMessages[ErrorCodes.NETWORK_ERROR]);
+      console.error("Login error:", error);
+      this.showError("Lỗi đăng nhập. Vui lòng thử lại.");
     }
-  }
+  };
 
   private createButtonX() {
     this.spr_btn_x = this.physics.add.sprite(0, 0, "spr_btn_x", 0);
