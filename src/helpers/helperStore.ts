@@ -1,6 +1,7 @@
 const generateUserEmailTemp = (): string => {
-  const timestamp = Date.now();
-  const email = `$user_${timestamp}@flappybird.com`;
+  const randomString = Math.random().toString(36).substring(2, 8);
+  const email = `user_${randomString}@flappybird.vn`;
+  console.log("Generated email:", email);
   return email;
 };
 
