@@ -14,6 +14,12 @@ export default class PreLoadScene extends Phaser.Scene {
       frameWidth: 300,
       frameHeight: 216,
     });
+    this.load.spritesheet("birdblue_spr", "birdblu_spritesheet.png", {
+      frameWidth: 81,
+      frameHeight: 58,
+    });
+    this.load.image("pipe_t", "pipe_t.png");
+    this.load.image("pipe_b", "pipe_b.png");
     this.load.image("TextTitle", "TextTitle.png");
     this.load.spritesheet("button_menu", "spritesheet button menu.png", {
       frameWidth: 310,
