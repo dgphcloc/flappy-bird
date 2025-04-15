@@ -1,3 +1,4 @@
+
 import getUserSession from "@/lib/supabase/getUserSession";
 
 export const generateUserEmailTemp = (): string => {

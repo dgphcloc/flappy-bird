@@ -1,4 +1,8 @@
 "use client";
+import LoginScene from "./LoginScene";
+import RegisterScene from "./RegisterScene";
+import getUserSession from "@/lib/supabase/getUserSession";
+import GamePlayScene from "./GamePlayScene";
 
 export default class MenuLoginScene extends Phaser.Scene {
   // Game objects
@@ -7,10 +11,10 @@ export default class MenuLoginScene extends Phaser.Scene {
   private ContainerMenu!: Phaser.GameObjects.Container;
   private birdImageContainer!: Phaser.GameObjects.Container;
   private backgroundContainer!: Phaser.GameObjects.Rectangle;
-  private backgroundMenu!: Phaser.GameObjects.Rectangle;
-
+  private user: any;
   // State
   private isLoggedIn: boolean = false;
+
   private buttonConfig: any[] = [
     { name: "login", frameIndex: 0, alwaysShow: false },
     { name: "play", frameIndex: 4, alwaysShow: false },
@@ -36,17 +40,30 @@ export default class MenuLoginScene extends Phaser.Scene {
     }
   }
 
+  public isLoggedInChange(value: boolean) {
+    this.isLoggedIn = value;
+
+    // Xóa toàn bộ container menu cũ
+    if (this.ContainerMenu) {
+      this.ContainerMenu.destroy();
+      this.ContainerMenu = this.add.container(
+        this.scale.width,
+        this.scale.height
+      );
+    }
+    this.updateLoginState();
+    this.createMenuButtons();
+  }
   // Scene lifecycle methods
-  create() {
+  async create() {
     const ScaleWidth = this.scale.width;
     const ScaleHeight = this.scale.height;
 
     // Launch required scenes
     this.launchRequiredScenes();
 
-    // Create UI elements
-    // this.createBackgroundMenu(ScaleWidth, ScaleHeight);
     this.createMenuContainer(ScaleWidth, ScaleHeight);
+    await this.updateLoginState();
     this.createMenuButtons();
     this.createBirdImageContainer(ScaleWidth, ScaleHeight);
 
@@ -57,7 +74,6 @@ export default class MenuLoginScene extends Phaser.Scene {
     this.birdMainBG.play("flappy");
   }
 
-  // Private helper methods
   private launchRequiredScenes() {
     if (!this.scene.isActive("BackgroundScene")) {
       this.scene.launch("BackgroundScene");
@@ -65,24 +81,15 @@ export default class MenuLoginScene extends Phaser.Scene {
     if (!this.scene.isActive("LoginScene")) {
       this.scene.launch("LoginScene");
     }
+    if (!this.scene.isActive("RegisterScene")) {
+      this.scene.launch("RegisterScene");
+    }
   }
-
-  // private createBackgroundMenu(width: number, height: number) {
-  //   this.backgroundMenu = this.add.rectangle(
-  //     0,
-  //     0,
-  //     width,
-  //     height / 3,
-  //     0x530000,
-  //     0
-  //   );
-  //   this.backgroundMenu.setOrigin(0, 0);
-  // }
 
   private createMenuContainer(width: number, height: number) {
     this.ContainerMenu = this.add.container(width, height);
     // this.ContainerMenu.setScale(1);
-    this.ContainerMenu.setVisible(false);
+    this.ContainerMenu.setVisible(true);
   }
 
   private createMenuButtons() {
@@ -162,22 +169,50 @@ export default class MenuLoginScene extends Phaser.Scene {
   private handleButtonClick(name: string) {
     console.log(`${name} button clicked`);
 
-    if (name === "login" && !this.isLoggedIn) {
-      this.tweens.add({
-        targets: this.ContainerMenu,
-        x: -this.scale.width,
-        duration: 500,
-        ease: "Power2",
-        onComplete: () => {
-          this.ContainerMenu.setVisible(false);
-          this.scene.launch("LoginScene");
-        },
-      });
-    }
+    switch (name) {
+      case "login":
+        if (!this.isLoggedIn) {
+          this.tweens.add({
+            targets: this.ContainerMenu,
+            x: -this.scale.width,
+            duration: 500,
+            ease: "Power2",
+            onComplete: () => {
+              this.ContainerMenu.setVisible(false);
+              // this.scene.launch("LoginScene");
+              const loginScene = this.scene.get("LoginScene") as LoginScene;
+              loginScene.showLoginContainer();
+            },
+          });
+        }
+        break;
 
-    if (name === "Login") {
-      this.isLoggedIn = true;
-      this.scene.restart();
+      case "play":
+        // Launch GamePlayScene
+        if (!this.scene.isActive("GamePlayScene")) {
+          this.scene.stop();
+          this.scene.start("GamePlayScene");
+        }
+        break;
+
+      case "birdSkins":
+        // Xử lý khi click nút bird skins
+        console.log("Open bird skins");
+        break;
+
+      case "topPlayer":
+        // Xử lý khi click nút top player
+        console.log("Show top players");
+        break;
+
+      case "settings":
+        // Xử lý khi click nút settings
+        console.log("Open settings");
+        break;
+
+      default:
+        console.log(`Unknown button: ${name}`);
+        break;
     }
   }
 
@@ -279,5 +314,13 @@ export default class MenuLoginScene extends Phaser.Scene {
         item.setScale(scale * 0.57);
       }
     });
+  }
+
+  private async updateLoginState() {
+    const {
+      data: { session },
+    } = await getUserSession();
+    this.user = session?.user;
+    this.isLoggedIn = !!this.user?.id;
   }
 }

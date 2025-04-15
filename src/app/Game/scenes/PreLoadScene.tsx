@@ -14,6 +14,12 @@ export default class PreLoadScene extends Phaser.Scene {
       frameWidth: 300,
       frameHeight: 216,
     });
+    this.load.spritesheet("birdblue_spr", "birdblu_spritesheet.png", {
+      frameWidth: 81,
+      frameHeight: 58,
+    });
+    this.load.image("pipe_t", "pipe_t.png");
+    this.load.image("pipe_b", "pipe_b.png");
     this.load.image("TextTitle", "TextTitle.png");
     this.load.spritesheet("button_menu", "spritesheet button menu.png", {
       frameWidth: 310,
@@ -27,6 +33,7 @@ export default class PreLoadScene extends Phaser.Scene {
     });
     this.load.image("username_icon", "iconUser.png");
     this.load.image("password_icon", "iconPassword.png");
+    this.load.image("passwordComfirm_icon", "iconCheck.png");
     this.load.image("eye_icon", "eye_icon.png");
     this.load.spritesheet("icon_GG", "icon_GG.png", {
       frameWidth: 53,
@@ -44,6 +51,15 @@ export default class PreLoadScene extends Phaser.Scene {
       frameWidth: 125,
       frameHeight: 60,
     });
+    this.load.spritesheet("btn_Register", "spritesheet_btn_Register.png", {
+      frameWidth: 125,
+      frameHeight: 60,
+    });
+    this.load.spritesheet("btn_Login_back", "spritesheet_btn_Loginback.png", {
+      frameWidth: 125,
+      frameHeight: 60,
+    });
+    this.load.image("background_register", "formRegister.png");
   }
 
   create() {
