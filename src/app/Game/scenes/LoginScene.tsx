@@ -488,9 +488,9 @@ export default class LoginScene extends Phaser.Scene {
       }
 
       // Chuyển đến màn hình chính
-      menuLoginScene.showMenu();
       this.LoginContainer.setVisible(false);
       this.toggleInputsAndIcons(false);
+      menuLoginScene.showMenu();
     } catch (error) {
       console.error("Login error:", error);
       this.showError("Lỗi đăng nhập. Vui lòng thử lại.");

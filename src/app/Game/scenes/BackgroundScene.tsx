@@ -23,7 +23,7 @@ export default class BackgroundScene extends Phaser.Scene {
 
     const scaleX = this.scale.width / 1080;
     const scaleY = this.scale.height / 1920;
-    const scale = Math.min(scaleX, scaleY); // Chọn scale lớn nhất để ảnh luôn full màn hình
+    const scale = Math.min(scaleX, scaleY);
     this.bg1.setScale(scale);
     this.bg2.setScale(scale);
 
@@ -31,10 +31,13 @@ export default class BackgroundScene extends Phaser.Scene {
     const heightGround = 430;
     this.ground1 = this.add
       .tileSprite(0, 0, widthGround, heightGround, "ground")
-      .setOrigin(0.5, 1);
+      .setOrigin(0.5, 1)
+      .setDepth(10000); // Ground layer - highest
+
     this.ground2 = this.add
       .tileSprite(0, 0, widthGround, heightGround, "ground")
-      .setOrigin(0.5, 1);
+      .setOrigin(0.5, 1)
+      .setDepth(10000); // Ground layer - highest
 
     const groundScaleX = this.scale.width / widthGround;
     const groundScaleY = this.scale.height / heightGround;
@@ -50,6 +53,9 @@ export default class BackgroundScene extends Phaser.Scene {
         this.scale.height
       )
       .setFlipX(true);
+
+    this.ground1.setDepth(2000);
+    this.ground2.setDepth(2000);
   }
   update() {
     this.bg1.x -= 1;
@@ -73,6 +79,20 @@ export default class BackgroundScene extends Phaser.Scene {
     }
     if (this.ground2.x <= -this.ground2.displayWidth / 2) {
       this.ground2.x = this.ground1.x + this.ground1.displayWidth;
+    }
+  }
+
+  public hideGround() {
+    if (this.ground1 && this.ground2) {
+      this.ground1.setVisible(false);
+      this.ground2.setVisible(false);
+    }
+  }
+
+  public showGround() {
+    if (this.ground1 && this.ground2) {
+      this.ground1.setVisible(true);
+      this.ground2.setVisible(true);
     }
   }
 }

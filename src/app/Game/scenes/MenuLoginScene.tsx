@@ -1,6 +1,9 @@
 "use client";
 import LoginScene from "./LoginScene";
 import RegisterScene from "./RegisterScene";
+import getUserSession from "@/lib/supabase/getUserSession";
+import GamePlayScene from "./GamePlayScene";
+
 export default class MenuLoginScene extends Phaser.Scene {
   // Game objects
   private birdMainBG!: Phaser.GameObjects.Sprite;
@@ -8,7 +11,7 @@ export default class MenuLoginScene extends Phaser.Scene {
   private ContainerMenu!: Phaser.GameObjects.Container;
   private birdImageContainer!: Phaser.GameObjects.Container;
   private backgroundContainer!: Phaser.GameObjects.Rectangle;
-
+  private user: any;
   // State
   private isLoggedIn: boolean = false;
 
@@ -48,12 +51,11 @@ export default class MenuLoginScene extends Phaser.Scene {
         this.scale.height
       );
     }
-
+    this.updateLoginState();
     this.createMenuButtons();
-    console.log("isLoggedIn", this.isLoggedIn);
   }
   // Scene lifecycle methods
-  create() {
+  async create() {
     const ScaleWidth = this.scale.width;
     const ScaleHeight = this.scale.height;
 
@@ -61,15 +63,17 @@ export default class MenuLoginScene extends Phaser.Scene {
     this.launchRequiredScenes();
 
     this.createMenuContainer(ScaleWidth, ScaleHeight);
+    await this.updateLoginState();
     this.createMenuButtons();
     this.createBirdImageContainer(ScaleWidth, ScaleHeight);
 
+    // Set up event listeners
     this.setupResizeListener(ScaleWidth, ScaleHeight);
 
+    // Start bird animation
     this.birdMainBG.play("flappy");
   }
 
-  // Private helper methods
   private launchRequiredScenes() {
     if (!this.scene.isActive("BackgroundScene")) {
       this.scene.launch("BackgroundScene");
@@ -184,8 +188,11 @@ export default class MenuLoginScene extends Phaser.Scene {
         break;
 
       case "play":
-        // Xử lý khi click nút play
-        console.log("Play game");
+        // Launch GamePlayScene
+        if (!this.scene.isActive("GamePlayScene")) {
+          this.scene.stop();
+          this.scene.start("GamePlayScene");
+        }
         break;
 
       case "birdSkins":
@@ -289,6 +296,7 @@ export default class MenuLoginScene extends Phaser.Scene {
       this.updateTitleScale(gameSize.width, gameSize.height);
       this.updateBirdScale(gameSize.width, gameSize.height);
 
+      // Thêm xử lý resize cho buttons
       this.updateButtonScales(gameSize.width, gameSize.height);
       this.updateMenuPosition(this.getVisibleButtons(this.buttonConfig).length);
     });
@@ -306,5 +314,13 @@ export default class MenuLoginScene extends Phaser.Scene {
         item.setScale(scale * 0.57);
       }
     });
+  }
+
+  private async updateLoginState() {
+    const {
+      data: { session },
+    } = await getUserSession();
+    this.user = session?.user;
+    this.isLoggedIn = !!this.user?.id;
   }
 }
