@@ -28,7 +28,7 @@ export default class BackgroundScene extends Phaser.Scene {
     this.bg2.setScale(scale);
 
     const widthGround = 1536;
-    const heightGround = 430;
+    const heightGround = 468;
     this.ground1 = this.add
       .tileSprite(0, 0, widthGround, heightGround, "ground")
       .setOrigin(0.5, 1)
