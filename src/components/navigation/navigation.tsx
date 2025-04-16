@@ -3,25 +3,25 @@ import { NavLink, Box, Title } from "@mantine/core";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 import { MdDashboard, MdPeople } from "react-icons/md";
-import { CiUser, CiViewList } from "react-icons/ci";
-import classes from './navigation.module.css';
+// import { CiUser, CiViewList } from "react-icons/ci";
+import classes from "./navigation.module.css";
 import { PATH_ADMIN } from "@/routes";
 
 const mockdata = [
   {
-    title: 'Dashboard',
+    title: "Dashboard",
     links: [
-      { label: 'dashboard', icon: MdDashboard, link: PATH_ADMIN.root },
-      { label: 'users', icon: MdPeople, link: PATH_ADMIN.users },
+      { label: "dashboard", icon: MdDashboard, link: PATH_ADMIN.root },
+      { label: "users", icon: MdPeople, link: PATH_ADMIN.users },
     ],
   },
-  {
-    title: 'App',
-    links: [
-      { label: 'profile', icon: CiUser, link: PATH_ADMIN.profile },
-      { label: 'logs', icon: CiViewList, link: PATH_ADMIN.log },
-    ],
-  },
+  // {
+  //   title: 'App',
+  //   links: [
+  //     { label: 'profile', icon: CiUser, link: PATH_ADMIN.profile },
+  //     { label: 'logs', icon: CiViewList, link: PATH_ADMIN.log },
+  //   ],
+  // },
 ];
 
 export default function Navigation() {
