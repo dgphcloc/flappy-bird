@@ -19,3 +19,14 @@ export const isValidScore = (score: number | string): boolean => {
 
   return numericScore >= MIN_SCORE && numericScore <= MAX_SCORE;
 };
+
+export const generateFilePath = async (file: File) => {
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${Math.random()}.${fileExt}`;
+  const filePath = `${fileName}`;
+  return filePath;
+};
+
+export function getFilenameFromUrl(url: string) {
+  return url.split("/").pop();
+}
