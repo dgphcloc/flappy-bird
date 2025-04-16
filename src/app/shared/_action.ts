@@ -102,3 +102,13 @@ export async function signInWithEmailAndPassword(data: {
   });
   return JSON.stringify(result);
 }
+
+export const getTopHighestPlayer = async (quantity: number) => {
+  const supabase = await createSupabaseServerClient();
+  const result = await supabase
+    .from("profiles")
+    .select("*")
+    .order("score", { ascending: false })
+    .limit(quantity);
+  return result;
+};
