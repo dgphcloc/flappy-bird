@@ -63,12 +63,33 @@ export async function fetchPaginatedRecords<T>({
 
 export async function fetchUsersByPage(
   page: number,
-  perPage = 15
+  perPage = 15,
+  query = ""
 ): Promise<PaginatedResult<UserRecord> | null> {
   return fetchPaginatedRecords<UserRecord>({
     tableName: "UserProfile",
     page,
     perPage,
-    searchColumns: ["name" as keyof UserRecord, "email" as keyof UserRecord],
+    searchColumns: ["username" as keyof UserRecord],
+    query: query,
   });
+}
+
+export async function fetchUserById(id: string): Promise<UserRecord | null> {
+  try {
+    const supabase = await createSupabaseAdminAuthClient();
+
+    const { data, error } = await supabase
+      .from("UserProfile")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) throw error;
+
+    return data as UserRecord;
+  } catch (error) {
+    console.error("Failed to fetch user by ID:", error);
+    return null;
+  }
 }
