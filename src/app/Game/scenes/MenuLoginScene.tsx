@@ -28,6 +28,13 @@ export default class MenuLoginScene extends Phaser.Scene {
   }
 
   // Public methods
+  public returnMenu() {
+    if (!this.scene.isActive("MenuLoginScene")) {
+      this.scene.start("MenuLoginScene");
+    } else {
+      this.showMenu();
+    }
+  }
   public showMenu() {
     if (this.ContainerMenu) {
       this.ContainerMenu.setVisible(true);
@@ -37,6 +44,8 @@ export default class MenuLoginScene extends Phaser.Scene {
         duration: 500,
         ease: "Power2",
       });
+      // const groundScene = this.scene.get("BackgroundScene") as any;
+      // groundScene.showGround();
     }
   }
 
@@ -190,7 +199,8 @@ export default class MenuLoginScene extends Phaser.Scene {
       case "play":
         // Launch GamePlayScene
         if (!this.scene.isActive("GamePlayScene")) {
-          this.scene.stop();
+          // this.isLoggedInChange(false);
+          this.ContainerMenu.setVisible(false);
           this.scene.start("GamePlayScene");
         }
         break;
