@@ -13,8 +13,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={kavoon.className}>
-        <MantineProvider>
+       <body className={kavoon.className}>
+        <MantineProvider
+          theme={{
+            components: {
+              Burger: {
+                styles: {
+                  root: {
+                    "--burger-color": "white",
+                  },
+                },
+              },
+            },
+          }}
+        >
           <Providers>{children}</Providers>
         </MantineProvider>
       </body>
