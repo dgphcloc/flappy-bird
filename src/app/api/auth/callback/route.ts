@@ -28,11 +28,10 @@ export async function GET(request: Request) {
     if (!error && user) {
       await makeProfileForUser(user.id);
       return NextResponse.redirect(`${origin}${next}`);
-      //return NextResponse.redirect(`/`);
     }
   }
   /**
    * hanlde error
    */
-  //return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+  return NextResponse.redirect(`${origin}/api/auth/auth-code-error?message=`);
 }
