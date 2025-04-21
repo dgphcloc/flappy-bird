@@ -10,15 +10,22 @@ interface PlayerData {
 
 // Định nghĩa interface cho dữ liệu API
 interface ApiPlayerData {
-  username: string;
+  id?: string;
+  username: string | null;
   score: number;
   rank: number;
-  profile_id: string;
+  profile_id?: string;
   avatar_url: string | null;
+  updated_at?: string;
+}
+
+interface TopPlayersResponse {
+  count: number;
+  data: ApiPlayerData[];
 }
 
 interface ApiResponse {
-  topPlayers: ApiPlayerData[];
+  topPlayers: TopPlayersResponse;
   me: ApiPlayerData[];
   error?: {
     message: string;
@@ -144,10 +151,10 @@ export default class TopPlayerScene extends Phaser.Scene {
       }
 
       // Xử lý dữ liệu top players
-      if (data.topPlayers && Array.isArray(data.topPlayers)) {
-        this.apiTopPlayers = data.topPlayers.map((player) => ({
+      if (data.topPlayers.data && Array.isArray(data.topPlayers.data)) {
+        this.apiTopPlayers = data.topPlayers.data.map((player) => ({
           rank: player.rank,
-          playerName: player.username,
+          playerName: player.username || "",
           score: player.score,
           avatarUrl: player.avatar_url || "asset/default_avatar.jpg",
         }));
@@ -158,7 +165,7 @@ export default class TopPlayerScene extends Phaser.Scene {
         const currentPlayer = data.me[0];
         this.apiCurrentPlayer = {
           rank: currentPlayer.rank,
-          playerName: currentPlayer.username,
+          playerName: currentPlayer.username || "",
           score: currentPlayer.score,
           avatarUrl: currentPlayer.avatar_url || "asset/default_avatar.jpg",
         };
@@ -308,10 +315,6 @@ export default class TopPlayerScene extends Phaser.Scene {
     inputBg.setOrigin(0.5, 0.5);
     inputBg.setScale(1.1);
     inputBg.setDepth(1080);
-
-    // if (isCurrentUser) {
-    //   inputBg.setTint(0x8adfea); // Màu xanh nhạt cho người dùng hiện tại
-    // }
 
     this.playerInputBgs.push(inputBg);
 
@@ -605,7 +608,7 @@ export default class TopPlayerScene extends Phaser.Scene {
     const playerDigits: Phaser.GameObjects.Sprite[] = [];
 
     // Hiển thị tối đa 3 chữ số
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < scoreString.length; i++) {
       let digit = 0;
       if (i < scoreString.length) {
         digit = parseInt(scoreString[i]);
