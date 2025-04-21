@@ -8,6 +8,23 @@ interface PlayerData {
   avatarUrl: string;
 }
 
+// Định nghĩa interface cho dữ liệu API
+interface ApiPlayerData {
+  username: string;
+  score: number;
+  rank: number;
+  profile_id: string;
+  avatar_url: string | null;
+}
+
+interface ApiResponse {
+  topPlayers: ApiPlayerData[];
+  me: ApiPlayerData[];
+  error?: {
+    message: string;
+  };
+}
+
 export default class TopPlayerScene extends Phaser.Scene {
   // Background và container
   private bg_topPlayer!: Phaser.GameObjects.Image;
@@ -32,6 +49,10 @@ export default class TopPlayerScene extends Phaser.Scene {
   private scoreTopPlayer!: Phaser.GameObjects.Sprite;
   private digitSprites: Phaser.GameObjects.Sprite[] = [];
   private nameText!: Phaser.GameObjects.Text;
+
+  // Dữ liệu từ API
+  private apiTopPlayers: PlayerData[] = [];
+  private apiCurrentPlayer: PlayerData | null = null;
 
   // Dữ liệu test
   private testPlayerData1: PlayerData[] = [
@@ -99,9 +120,67 @@ export default class TopPlayerScene extends Phaser.Scene {
 
   // Khởi tạo scene
   create() {
+    this.API_TopPlayer();
     this.createContainerTopPlayer();
     this.containerTopPlayer.setVisible(false);
   }
+
+  private API_TopPlayer = async () => {
+    try {
+      const response = await fetch("/api/topPlayer", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = (await response.json()) as ApiResponse;
+
+      console.log("Top Player API response:", data);
+
+      if (data.error) {
+        console.log("API error:", data.error.message);
+        return;
+      }
+
+      // Xử lý dữ liệu top players
+      if (data.topPlayers && Array.isArray(data.topPlayers)) {
+        this.apiTopPlayers = data.topPlayers.map((player) => ({
+          rank: player.rank,
+          playerName: player.username,
+          score: player.score,
+          avatarUrl: player.avatar_url || "asset/default_avatar.jpg",
+        }));
+      }
+
+      // Xử lý dữ liệu người chơi hiện tại
+      if (data.me && data.me.length > 0) {
+        const currentPlayer = data.me[0];
+        this.apiCurrentPlayer = {
+          rank: currentPlayer.rank,
+          playerName: currentPlayer.username,
+          score: currentPlayer.score,
+          avatarUrl: currentPlayer.avatar_url || "asset/default_avatar.jpg",
+        };
+
+        // Hiển thị thông tin người chơi hiện tại
+        if (this.containerTopPlayer && this.containerTopPlayer.visible) {
+          this.displayPlayer(this.apiCurrentPlayer, true);
+        }
+      }
+
+      // Hiển thị danh sách top players nếu có dữ liệu
+      if (
+        this.apiTopPlayers.length > 0 &&
+        this.containerTopPlayer &&
+        this.containerTopPlayer.visible
+      ) {
+        this.displayAllPlayers(this.apiTopPlayers);
+      }
+    } catch (error) {
+      console.error("API error:", error);
+    }
+  };
 
   // Tạo container chính chứa tất cả thành phần
   private createContainerTopPlayer() {
@@ -116,11 +195,17 @@ export default class TopPlayerScene extends Phaser.Scene {
     // Thêm background và nút vào container
     this.containerTopPlayer.add([this.bg_topPlayer, this.btn_back]);
 
-    // Hiển thị danh sách người chơi top
-    this.displayAllPlayers(this.testPlayerData);
-
-    // Hiển thị người chơi đặc biệt
-    this.displayPlayer(this.testPlayerData1[0]);
+    // Hiển thị dữ liệu từ API nếu có, nếu không thì hiển thị dữ liệu test
+    if (this.apiTopPlayers.length > 0) {
+      this.displayAllPlayers(this.apiTopPlayers);
+      if (this.apiCurrentPlayer) {
+        this.displayPlayer(this.apiCurrentPlayer, true);
+      }
+    } else {
+      // Hiển thị dữ liệu test khi chưa có dữ liệu API
+      this.displayAllPlayers(this.testPlayerData);
+      this.displayPlayer(this.testPlayerData1[0]);
+    }
 
     // Thiết lập scale và độ sâu cho container
     const baseWidth = this.bg_topPlayer.width;
@@ -136,6 +221,14 @@ export default class TopPlayerScene extends Phaser.Scene {
   public showContainerTopPlayer() {
     if (!this.containerTopPlayer) {
       this.createContainerTopPlayer();
+    } else {
+      // Cập nhật dữ liệu mới nhất khi hiển thị lại
+      if (this.apiTopPlayers.length > 0) {
+        this.displayAllPlayers(this.apiTopPlayers);
+        if (this.apiCurrentPlayer) {
+          this.displayPlayer(this.apiCurrentPlayer, true);
+        }
+      }
     }
     this.containerTopPlayer.setVisible(true);
   }
@@ -216,9 +309,9 @@ export default class TopPlayerScene extends Phaser.Scene {
     inputBg.setScale(1.1);
     inputBg.setDepth(1080);
 
-    if (isCurrentUser) {
-      inputBg.setTint(0x8adfea); // Màu xanh nhạt cho người dùng hiện tại
-    }
+    // if (isCurrentUser) {
+    //   inputBg.setTint(0x8adfea); // Màu xanh nhạt cho người dùng hiện tại
+    // }
 
     this.playerInputBgs.push(inputBg);
 
