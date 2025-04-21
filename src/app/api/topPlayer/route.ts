@@ -1,16 +1,16 @@
-import { getTopHighestPlayer } from "@/app/shared/_action";
+import { getProfileRank, getTopHighestPlayer } from "@/app/shared/_action";
 
 export async function GET() {
   try {
-    const player = await getTopHighestPlayer(3);
-
-    if (!player) {
+    const toPlayers = await getTopHighestPlayer(3);
+    const me = await getProfileRank();
+    if (!toPlayers) {
       return new Response(JSON.stringify({ error: "No players found" }), {
         status: 404,
       });
     }
 
-    return new Response(JSON.stringify(player), {
+    return new Response(JSON.stringify({ toPlayers, me }), {
       headers: { "Content-Type": "application/json" },
       status: 200,
     });
