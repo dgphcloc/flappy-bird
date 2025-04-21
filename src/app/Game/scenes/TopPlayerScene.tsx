@@ -9,12 +9,13 @@ interface PlayerData {
 }
 
 export default class TopPlayerScene extends Phaser.Scene {
+  // Background và container
   private bg_topPlayer!: Phaser.GameObjects.Image;
   private containerTopPlayer!: Phaser.GameObjects.Container;
   private btn_back!: Phaser.GameObjects.Sprite;
-  private bg_InputTopPlayer!: Phaser.GameObjects.Image;
+  private icon_infinity!: Phaser.GameObjects.Image;
 
-  // Mảng lưu trữ các thành phần cho nhiều người chơi
+  // Mảng lưu trữ các thành phần cho danh sách người chơi
   private playerRanks: Phaser.GameObjects.Sprite[] = [];
   private playerAvatarBorders: Phaser.GameObjects.Image[] = [];
   private playerAvatars: Phaser.GameObjects.Image[] = [];
@@ -23,7 +24,7 @@ export default class TopPlayerScene extends Phaser.Scene {
   private playerNames: Phaser.GameObjects.Text[] = [];
   private playerInputBgs: Phaser.GameObjects.Image[] = [];
 
-  // Các thuộc tính cũ giữ nguyên để tương thích ngược
+  // Các thuộc tính cho hiển thị người chơi đặc biệt
   private spr_numberTopPlayer!: Phaser.GameObjects.Sprite;
   private boder_avatar!: Phaser.GameObjects.Image;
   private icon_TopPlayer!: Phaser.GameObjects.Sprite;
@@ -33,6 +34,15 @@ export default class TopPlayerScene extends Phaser.Scene {
   private nameText!: Phaser.GameObjects.Text;
 
   // Dữ liệu test
+  private testPlayerData1: PlayerData[] = [
+    {
+      rank: 99,
+      playerName: "Nguyễn Văn 873",
+      score: 2,
+      avatarUrl:
+        "https://cdn11.dienmaycholon.vn/filewebdmclnew/public/userupload/files/Image%20FP_2024/hinh-anime-2.jpg",
+    },
+  ];
   private testPlayerData: PlayerData[] = [
     {
       rank: 1,
@@ -60,6 +70,8 @@ export default class TopPlayerScene extends Phaser.Scene {
   constructor() {
     super("TopPlayerScene");
   }
+
+  // Tải tài nguyên cần thiết
   preload() {
     this.load.setPath("asset");
     this.load.image("bg_topPlayer", "bg_topPlayer.png");
@@ -81,13 +93,17 @@ export default class TopPlayerScene extends Phaser.Scene {
       frameWidth: 30,
       frameHeight: 30,
     });
-
     this.load.image("default_avatar", "default_avatar.jpg");
+    this.load.image("icon_infinity", "icon_infinity.png");
   }
+
+  // Khởi tạo scene
   create() {
     this.createContainerTopPlayer();
     this.containerTopPlayer.setVisible(false);
   }
+
+  // Tạo container chính chứa tất cả thành phần
   private createContainerTopPlayer() {
     this.containerTopPlayer = this.add.container(
       this.scale.width / 2,
@@ -100,51 +116,53 @@ export default class TopPlayerScene extends Phaser.Scene {
     // Thêm background và nút vào container
     this.containerTopPlayer.add([this.bg_topPlayer, this.btn_back]);
 
-    // Hiển thị tất cả người chơi từ dữ liệu test
+    // Hiển thị danh sách người chơi top
     this.displayAllPlayers(this.testPlayerData);
 
+    // Hiển thị người chơi đặc biệt
+    this.displayPlayer(this.testPlayerData1[0]);
+
+    // Thiết lập scale và độ sâu cho container
     const baseWidth = this.bg_topPlayer.width;
-    const targetWidth = this.scale.width * 0.95; // 90% of screen width
+    const targetWidth = this.scale.width * 0.95;
     const containerScale = targetWidth / baseWidth;
-
-    // Apply scale to the entire container - all children will inherit this scale
     this.containerTopPlayer.setScale(containerScale);
-
-    // Set the depth for the container to ensure it appears above other elements
     this.containerTopPlayer.setDepth(1029);
-
-    // Đảm bảo container hiển thị
     this.containerTopPlayer.setVisible(true);
     this.containerTopPlayer.setAlpha(1);
   }
+
+  // Hiển thị container
   public showContainerTopPlayer() {
     if (!this.containerTopPlayer) {
       this.createContainerTopPlayer();
     }
     this.containerTopPlayer.setVisible(true);
   }
+
+  // Ẩn container
   public hideContainerTopPlayer() {
     if (!this.containerTopPlayer) {
       return;
     }
     this.containerTopPlayer.setVisible(false);
   }
+
+  // Tạo background chính
   private createBackground() {
     this.bg_topPlayer = this.add.image(0, 0, "bg_topPlayer");
     this.bg_topPlayer.setOrigin(0.5, 0.5);
     this.bg_topPlayer.setScale(0.9);
     this.bg_topPlayer.setDepth(1030);
   }
+
+  // Tạo nút quay lại
   private createBtnBack() {
     this.btn_back = this.add.sprite(
       0,
       this.bg_topPlayer.displayHeight / 2,
       "btn_back",
       0
-    );
-    console.log(
-      -this.bg_topPlayer.displayWidth / 2,
-      this.bg_topPlayer.displayHeight / 2
     );
     this.btn_back.setOrigin(0.5, 0.5);
     this.btn_back.setScale(1);
@@ -170,101 +188,190 @@ export default class TopPlayerScene extends Phaser.Scene {
     this.btn_back.setDepth(1042);
   }
 
-  private createNumberTopPlayer(number: number) {
-    this.spr_numberTopPlayer = this.add.sprite(
-      -this.bg_InputTopPlayer.displayWidth / 2.4,
-      -this.bg_InputTopPlayer.displayHeight / 0.9,
-      "spr_numberTopPlayer",
-      number
-    );
-    this.spr_numberTopPlayer.setOrigin(0.5, 0.5);
-    this.spr_numberTopPlayer.setScale(1.2);
-    this.spr_numberTopPlayer.setDepth(1030);
-
-    this.boder_avatar = this.add.image(
-      -this.bg_InputTopPlayer.displayWidth / 3.4,
-      -this.bg_InputTopPlayer.displayHeight / 0.9,
-      "boder_avatar"
-    );
-    this.boder_avatar.setOrigin(0.5, 0.5);
-    this.boder_avatar.setScale(1);
-    this.boder_avatar.setDepth(1030);
-
-    // Add avatar image inside the border
-    this.avatar_image = this.add.image(
-      this.boder_avatar.x,
-      this.boder_avatar.y,
-      "default_avatar"
-    );
-    this.avatar_image.setOrigin(0.5, 0.5);
-
-    // Make the avatar fit inside the border
-    const borderWidth = this.boder_avatar.displayWidth * 0.8;
-    const borderHeight = this.boder_avatar.displayHeight * 0.8;
-
-    // Set avatar size to fit within the border
-    const scaleX = borderWidth / this.avatar_image.width;
-    const scaleY = borderHeight / this.avatar_image.height;
-    const scale = Math.min(scaleX, scaleY);
-
-    this.avatar_image.setScale(scale);
-    this.avatar_image.setDepth(1029); // Set depth lower than border so it appears behind it
-
-    this.icon_TopPlayer = this.add.sprite(
-      this.bg_InputTopPlayer.displayWidth / 3,
-      -this.bg_InputTopPlayer.displayHeight / 0.9,
-      "spr_iconTopPlayer",
-      0
-    );
-    this.icon_TopPlayer.setOrigin(0.5, 0.5);
-    this.icon_TopPlayer.setScale(1.25);
-    this.icon_TopPlayer.setDepth(1030);
-  }
-  private createScoreTopPlayer(score: number, playerName: string) {
-    const scoreString = score.toString();
-
-    // Xóa các sprite cũ nếu có
-    this.digitSprites.forEach((sprScore) => sprScore.destroy());
+  // Hiển thị một người chơi đặc biệt (từ API hoặc người chơi hiện tại)
+  public displayPlayer(playerData: PlayerData, isCurrentUser: boolean = false) {
+    // Xóa các đối tượng liên quan đến người chơi đặc biệt nếu đã có trước đó
+    if (this.nameText) this.nameText.destroy();
+    if (this.spr_numberTopPlayer) this.spr_numberTopPlayer.destroy();
+    if (this.boder_avatar) this.boder_avatar.destroy();
+    if (this.avatar_image) this.avatar_image.destroy();
+    if (this.icon_TopPlayer) this.icon_TopPlayer.destroy();
+    if (this.scoreTopPlayer) this.scoreTopPlayer.destroy();
+    this.digitSprites.forEach((sprite) => sprite.destroy());
     this.digitSprites = [];
 
-    // Định nghĩa kích thước và vị trí
-    const digitWidth = 13; // Khoảng cách giữa các chữ số
-    const startX = -this.bg_InputTopPlayer.displayWidth / 4.9; // Vị trí bắt đầu, cùng vị trí với icon_TopPlayer
-    const startY = -this.bg_InputTopPlayer.displayHeight / 0.8; // Vị trí y, cùng hàng với icon
+    // Vị trí hiển thị cho người chơi đặc biệt (dưới top players)
+    const topPlayersHeight =
+      this.testPlayerData.length * (this.bg_topPlayer.displayHeight * 0.14);
+    const additionalGap = 30;
+    const specialY =
+      -this.bg_topPlayer.displayHeight / 7 + topPlayersHeight + additionalGap;
 
-    // Tạo sprite cho từng chữ số
+    // Điều chỉnh vị trí Y cao hơn 15px
+    const adjustedY = specialY - 23;
+
+    // Tạo background
+    const inputBg = this.add.image(0, adjustedY, "bg_InputTopPlayer");
+    inputBg.setOrigin(0.5, 0.5);
+    inputBg.setScale(1.1);
+    inputBg.setDepth(1080);
+
+    if (isCurrentUser) {
+      inputBg.setTint(0x8adfea); // Màu xanh nhạt cho người dùng hiện tại
+    }
+
+    this.playerInputBgs.push(inputBg);
+
+    // Hiển thị xếp hạng - tạo sprite riêng cho mỗi chữ số
+    const rankString = playerData.rank.toString();
+    const rankDigitWidth = 17; // Khoảng cách giữa các chữ số
+    const rankSprites: Phaser.GameObjects.Sprite[] = [];
+
+    // Kiểm tra nếu số xếp hạng có nhiều hơn 2 chữ số
+    if (rankString.length > 2) {
+      // Hiển thị biểu tượng vô cực thay vì số
+      this.icon_infinity = this.add.image(
+        -inputBg.displayWidth / 2.4,
+        adjustedY,
+        "icon_infinity"
+      );
+      this.icon_infinity.setOrigin(0.5, 0.5);
+      this.icon_infinity.setScale(1);
+      this.icon_infinity.setDepth(1080);
+
+      // Thêm vào container sau
+      rankSprites.push(this.icon_infinity as any);
+
+      // Giữ tham chiếu cho spr_numberTopPlayer để tránh lỗi
+      const hiddenRankSprite = this.add.sprite(
+        -inputBg.displayWidth / 2.25,
+        adjustedY,
+        "spr_numberTopPlayer",
+        0
+      );
+      hiddenRankSprite.setVisible(false);
+      this.spr_numberTopPlayer = hiddenRankSprite;
+      this.playerRanks.push(hiddenRankSprite);
+    } else {
+      // Hiển thị bình thường các chữ số của xếp hạng
+      for (let i = 0; i < rankString.length; i++) {
+        const digit = parseInt(rankString[i]);
+        const xOffset = i * rankDigitWidth;
+
+        const rankSprite = this.add.sprite(
+          -inputBg.displayWidth / 2.25 + xOffset,
+          adjustedY,
+          "spr_numberTopPlayer",
+          digit
+        );
+        rankSprite.setOrigin(0.5, 0.5);
+        rankSprite.setScale(1.2);
+        rankSprite.setDepth(1080);
+
+        rankSprites.push(rankSprite);
+        this.playerRanks.push(rankSprite);
+      }
+    }
+
+    // Lưu sprite đầu tiên làm this.spr_numberTopPlayer để tương thích với code cũ
+    if (rankSprites.length > 0 && !this.spr_numberTopPlayer) {
+      this.spr_numberTopPlayer = rankSprites[0] as Phaser.GameObjects.Sprite;
+    }
+
+    // Hiển thị avatar và viền
+    const borderAvatar = this.add.image(
+      -inputBg.displayWidth / 3.4,
+      adjustedY,
+      "boder_avatar"
+    );
+    borderAvatar.setOrigin(0.5, 0.5);
+    borderAvatar.setScale(1);
+    borderAvatar.setDepth(1080);
+
+    if (isCurrentUser) {
+      borderAvatar.setTint(0x4b9cd3); // Màu xanh lam cho viền người dùng hiện tại
+    }
+
+    this.playerAvatarBorders.push(borderAvatar);
+    this.boder_avatar = borderAvatar;
+
+    const avatar = this.add.image(
+      borderAvatar.x,
+      borderAvatar.y,
+      "default_avatar"
+    );
+    avatar.setOrigin(0.5, 0.5);
+    avatar.setDepth(1080);
+
+    // Điều chỉnh kích thước avatar vừa với viền
+    const borderWidth = borderAvatar.displayWidth * 0.8;
+    const borderHeight = borderAvatar.displayHeight * 0.8;
+    const scaleX = borderWidth / avatar.width;
+    const scaleY = borderHeight / avatar.height;
+    const scale = Math.min(scaleX, scaleY);
+    avatar.setScale(scale);
+
+    this.playerAvatars.push(avatar);
+    this.avatar_image = avatar;
+
+    // Hiển thị icon
+    const iconTopPlayer = this.add.sprite(
+      inputBg.displayWidth / 3,
+      adjustedY,
+      "spr_iconTopPlayer",
+      3
+    );
+    iconTopPlayer.setOrigin(0.5, 0.5);
+    iconTopPlayer.setScale(1.25);
+    iconTopPlayer.setDepth(1080);
+    this.playerIcons.push(iconTopPlayer);
+    this.icon_TopPlayer = iconTopPlayer;
+
+    // Hiển thị điểm số
+    const scoreString = playerData.score.toString();
+    const digitWidth = 13;
+    const startX = -inputBg.displayWidth / 4.9;
+    const scoreY = adjustedY - inputBg.displayHeight / 10.5;
+    const scoreScale = 0.6;
+
+    const playerDigits: Phaser.GameObjects.Sprite[] = [];
+
+    // Hiển thị đúng số lượng chữ số của điểm số
     for (let i = 0; i < scoreString.length; i++) {
       const digit = parseInt(scoreString[i]);
-      const x = startX + i * digitWidth; // Tính toán vị trí x cho mỗi chữ số
 
-      this.scoreTopPlayer = this.add.sprite(x, startY, "scoreTopPlayer", digit);
-      this.scoreTopPlayer.setOrigin(0, 0.5);
-      this.scoreTopPlayer.setScale(0.6);
-      this.scoreTopPlayer.setDepth(1035);
-      this.digitSprites.push(this.scoreTopPlayer);
+      const x = startX + i * digitWidth;
+      const digitSprite = this.add.sprite(x, scoreY, "scoreTopPlayer", digit);
+      digitSprite.setOrigin(0, 0.5);
+      digitSprite.setScale(scoreScale);
+      digitSprite.setDepth(1080);
+
+      playerDigits.push(digitSprite);
+      this.digitSprites.push(digitSprite);
     }
+
+    this.playerScoreDigits.push(playerDigits);
 
     // Hiển thị tên người chơi
-    const nameX = -this.bg_InputTopPlayer.displayWidth / 4.4; // Vị trí X của tên
-    const nameY = -this.bg_InputTopPlayer.displayHeight / 1.1; // Cùng hàng với điểm số
-
-    // Tạo style cho văn bản - sử dụng kích thước tương đối với kích thước của điểm số
-    const scoreScale = 0.6; // Scale của các chữ số điểm
-    const baseFontSize = 18; // Kích thước cơ bản
-    const scaledFontSize = Math.round(baseFontSize / scoreScale); // Điều chỉnh kích thước font để tương ứng với scale
-
-    // Kiểm tra độ dài tên người chơi và cắt ngắn nếu cần
-    let displayName = playerName;
+    const trimmedName = playerData.playerName.trim();
     const maxLength = 13;
-    if (playerName.length > maxLength) {
-      displayName = playerName.substring(0, maxLength) + "...";
+    let displayName = trimmedName;
+    if (trimmedName.length > maxLength) {
+      displayName = trimmedName.substring(0, maxLength) + "...";
     }
+
+    const nameX = -inputBg.displayWidth / 4.6;
+    const nameY = adjustedY + inputBg.displayHeight / 6;
+
+    const baseFontSize = 18;
+    const scaledFontSize = Math.round(baseFontSize / scoreScale);
 
     const textStyle = {
       fontFamily: "Inter",
-      fontSize: `${scaledFontSize}px`, // Sử dụng kích thước phù hợp khi điểm được scale
+      fontSize: `${scaledFontSize}px`,
       color: "#FFFFFF",
       strokeThickness: 2,
+      fontStyle: isCurrentUser ? "bold" : "normal",
       padding: {
         left: 15,
         right: 15,
@@ -273,114 +380,45 @@ export default class TopPlayerScene extends Phaser.Scene {
       },
     };
 
-    // Tạo text và gán vào thuộc tính nameText
-    this.nameText = this.add.text(nameX, nameY, displayName, textStyle);
-    this.nameText.setOrigin(0, 0.5);
-    this.nameText.setDepth(1035);
-    this.nameText.setScale(scoreScale); // Scale văn bản giống như scale của điểm số
+    const nameText = this.add.text(nameX, nameY, displayName, textStyle);
+    nameText.setOrigin(0, 0.5);
+    nameText.setDepth(1080);
+    nameText.setScale(scoreScale);
+    this.playerNames.push(nameText);
+    this.nameText = nameText;
+
+    // Thêm tất cả thành phần vào container
+    const elements = [
+      inputBg,
+      ...rankSprites, // Thêm tất cả các sprite của rank
+      borderAvatar,
+      avatar,
+      iconTopPlayer,
+      ...playerDigits,
+      nameText,
+    ];
+
+    this.containerTopPlayer.add(elements);
+
+    // Tải và cập nhật avatar
+    this.loadPlayerAvatar(avatar, borderAvatar, playerData.avatarUrl);
   }
-  // Method to update avatar with URL
-  public updateAvatar(imageUrl: string) {
-    // Đảm bảo avatar_image đã được khởi tạo
-    if (!this.avatar_image || !this.boder_avatar) {
-      console.error("Avatar image or border not initialized");
-      return;
-    }
 
-    console.log("Updating avatar with URL:", imageUrl);
-
-    // Create a new texture loader for the dynamic image
-    const textureKey = "avatar_" + Date.now(); // Create unique key
-
-    // Lưu lại đường dẫn cũ
-    const oldPath = this.load.path;
-
-    // Đặt lại đường dẫn thành rỗng để không thêm tiền tố
-    this.load.setPath("");
-
-    // Dùng proxy server thay vì truy cập trực tiếp URL
-    const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
-    console.log("Loading image from:", proxyUrl);
-
-    // Load the image from URL through proxy
-    this.load.image(textureKey, proxyUrl);
-
-    // Xử lý lỗi nếu không tải được
-    this.load.once("loaderror", (fileObj: any) => {
-      console.error("Failed to load image:", fileObj);
-      // Khôi phục đường dẫn cũ
-      this.load.setPath(oldPath);
-
-      this.avatar_image.setTexture("default_avatar");
-
-      // Scale default avatar
-      const borderWidth = this.boder_avatar.displayWidth * 0.8;
-      const borderHeight = this.boder_avatar.displayHeight * 0.8;
-      const scaleX = borderWidth / this.avatar_image.width;
-      const scaleY = borderHeight / this.avatar_image.height;
-      this.avatar_image.setScale(Math.min(scaleX, scaleY));
-    });
-
-    this.load.once("complete", () => {
-      console.log("Image loaded successfully:", textureKey);
-      // Khôi phục đường dẫn cũ
-      this.load.setPath(oldPath);
-
-      // Đảm bảo texture tồn tại trong cache
-      if (this.textures.exists(textureKey)) {
-        // Replace the current avatar with the new one
-        this.avatar_image.setTexture(textureKey);
-        console.log("Texture set successfully");
-
-        // Recalculate scale to fit within the border
-        const borderWidth = this.boder_avatar.displayWidth * 0.8;
-        const borderHeight = this.boder_avatar.displayHeight * 0.8;
-
-        const scaleX = borderWidth / this.avatar_image.width;
-        const scaleY = borderHeight / this.avatar_image.height;
-        const scale = Math.min(scaleX, scaleY);
-
-        this.avatar_image.setScale(scale);
-      } else {
-        console.error("Texture not found in cache:", textureKey);
-        this.avatar_image.setTexture("default_avatar");
-      }
-    });
-
-    // Start loading
-    this.load.start();
-  }
-  // Phương thức để hiển thị một người chơi từ dữ liệu
-  public displayPlayer(playerData: PlayerData) {
-    // Cập nhật thông tin người chơi
-    this.createNumberTopPlayer(playerData.rank);
-    this.createScoreTopPlayer(playerData.score, playerData.playerName);
-
-    // Cập nhật avatar
-    this.updateAvatar(playerData.avatarUrl);
-  }
-  // Thêm phương thức mới để hiển thị nhiều người chơi
+  // Hiển thị danh sách người chơi top
   public displayAllPlayers(players: PlayerData[]) {
-    // Xóa tất cả dữ liệu hiển thị cũ nếu có
     this.clearAllPlayerDisplays();
 
-    // Khoảng cách tính theo phần trăm chiều cao của background chính
-    const spacingPercentage = 0.14; // 15% chiều cao của bg_topPlayer
+    const spacingPercentage = 0.14; // Khoảng cách 14% chiều cao background
     const spacing = this.bg_topPlayer.displayHeight * spacingPercentage;
 
-    // Hiển thị từng người chơi
     players.forEach((player, index) => {
-      // Tính toán offset Y dựa trên index
       const yOffset = index * spacing;
-
-      // Tạo và hiển thị thông tin người chơi
       this.createPlayerInputAtPosition(player, yOffset);
     });
   }
 
-  // Phương thức để xóa tất cả hiển thị người chơi hiện tại
+  // Xóa hiển thị danh sách người chơi
   private clearAllPlayerDisplays() {
-    // Xóa tất cả các thành phần đã tạo
     this.playerRanks.forEach((rank) => rank.destroy());
     this.playerAvatarBorders.forEach((border) => border.destroy());
     this.playerAvatars.forEach((avatar) => avatar.destroy());
@@ -391,7 +429,6 @@ export default class TopPlayerScene extends Phaser.Scene {
     this.playerNames.forEach((name) => name.destroy());
     this.playerInputBgs.forEach((bg) => bg.destroy());
 
-    // Làm trống các mảng
     this.playerRanks = [];
     this.playerAvatarBorders = [];
     this.playerAvatars = [];
@@ -401,34 +438,31 @@ export default class TopPlayerScene extends Phaser.Scene {
     this.playerInputBgs = [];
   }
 
-  // Phương thức để tạo thông tin người chơi tại vị trí Y cụ thể
+  // Tạo hiển thị cho một người chơi trong danh sách
   private createPlayerInputAtPosition(playerData: PlayerData, yOffset: number) {
-    // Vị trí cơ sở Y (giống như trong createNumberTopPlayer)
     const baseY = -this.bg_topPlayer.displayHeight / 7;
-
-    // Vị trí Y hiện tại với offset
     const currentY = baseY + yOffset;
 
-    // ----- TẠO BACKGROUND CHO TỪNG NGƯỜI CHƠI -----
+    // Tạo background
     const inputBg = this.add.image(0, currentY, "bg_InputTopPlayer");
     inputBg.setOrigin(0.5, 0.5);
     inputBg.setScale(1);
     inputBg.setDepth(1030);
     this.playerInputBgs.push(inputBg);
 
-    // ----- HIỂN THỊ SỐ THỨ TỰ -----
+    // Hiển thị xếp hạng
     const rankSprite = this.add.sprite(
       -inputBg.displayWidth / 2.4,
       currentY,
       "spr_numberTopPlayer",
-      playerData.rank // Frame bắt đầu từ 0
+      playerData.rank
     );
     rankSprite.setOrigin(0.5, 0.5);
     rankSprite.setScale(1.2);
     rankSprite.setDepth(1030);
     this.playerRanks.push(rankSprite);
 
-    // ----- HIỂN THỊ AVATAR -----
+    // Hiển thị avatar và viền
     const borderAvatar = this.add.image(
       -inputBg.displayWidth / 3.4,
       currentY,
@@ -439,7 +473,6 @@ export default class TopPlayerScene extends Phaser.Scene {
     borderAvatar.setDepth(1030);
     this.playerAvatarBorders.push(borderAvatar);
 
-    // Tạo avatar
     const avatar = this.add.image(
       borderAvatar.x,
       borderAvatar.y,
@@ -448,17 +481,16 @@ export default class TopPlayerScene extends Phaser.Scene {
     avatar.setOrigin(0.5, 0.5);
     avatar.setDepth(1029);
 
-    // Điều chỉnh kích thước avatar
+    // Điều chỉnh kích thước avatar vừa với viền
     const borderWidth = borderAvatar.displayWidth * 0.8;
     const borderHeight = borderAvatar.displayHeight * 0.8;
     const scaleX = borderWidth / avatar.width;
     const scaleY = borderHeight / avatar.height;
     const scale = Math.min(scaleX, scaleY);
     avatar.setScale(scale);
-
     this.playerAvatars.push(avatar);
 
-    // ----- HIỂN THỊ ICON -----
+    // Hiển thị icon
     const iconTopPlayer = this.add.sprite(
       inputBg.displayWidth / 3,
       currentY,
@@ -470,32 +502,32 @@ export default class TopPlayerScene extends Phaser.Scene {
     iconTopPlayer.setDepth(1030);
     this.playerIcons.push(iconTopPlayer);
 
-    // ----- HIỂN THỊ ĐIỂM SỐ -----
+    // Hiển thị điểm số
     const scoreString = playerData.score.toString();
     const digitWidth = 13;
     const startX = -inputBg.displayWidth / 4.9;
     const scoreY = currentY - inputBg.displayHeight / 10.5;
     const scoreScale = 0.6;
 
-    // Mảng chứa chữ số của người chơi này
     const playerDigits: Phaser.GameObjects.Sprite[] = [];
 
-    // Tạo sprite cho từng chữ số
+    // Hiển thị tối đa 3 chữ số
     for (let i = 0; i < 3; i++) {
-      const digit = parseInt(scoreString[i]);
-      const x = startX + i * digitWidth;
+      let digit = 0;
+      if (i < scoreString.length) {
+        digit = parseInt(scoreString[i]);
+      }
 
+      const x = startX + i * digitWidth;
       const digitSprite = this.add.sprite(x, scoreY, "scoreTopPlayer", digit);
       digitSprite.setOrigin(0, 0.5);
       digitSprite.setScale(scoreScale);
       digitSprite.setDepth(1035);
-
       playerDigits.push(digitSprite);
     }
-
     this.playerScoreDigits.push(playerDigits);
 
-    // ----- HIỂN THỊ TÊN NGƯỜI CHƠI -----
+    // Hiển thị tên người chơi
     const trimmedName = playerData.playerName.trim();
     const maxLength = 13;
     let displayName = trimmedName;
@@ -539,11 +571,11 @@ export default class TopPlayerScene extends Phaser.Scene {
       nameText,
     ]);
 
-    // Cập nhật avatar nếu có URL
+    // Tải và cập nhật avatar
     this.loadPlayerAvatar(avatar, borderAvatar, playerData.avatarUrl);
   }
 
-  // Phương thức mới để tải avatar riêng cho từng người chơi
+  // Tải avatar từ URL qua proxy
   private loadPlayerAvatar(
     avatarImage: Phaser.GameObjects.Image,
     borderAvatar: Phaser.GameObjects.Image,
@@ -554,25 +586,26 @@ export default class TopPlayerScene extends Phaser.Scene {
       return;
     }
 
-    console.log("Loading avatar:", imageUrl);
-
+    // Tạo key duy nhất cho texture
     const textureKey =
       "avatar_" +
       Date.now() +
       "_" +
       Math.random().toString(36).substring(2, 15);
+
     const oldPath = this.load.path;
     this.load.setPath("");
 
+    // Sử dụng proxy để tránh vấn đề CORS
     const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
-
     this.load.image(textureKey, proxyUrl);
 
-    this.load.once("loaderror", (fileObj: any) => {
-      console.error("Failed to load image:", fileObj);
+    // Xử lý lỗi khi tải ảnh
+    this.load.once("loaderror", () => {
       this.load.setPath(oldPath);
       avatarImage.setTexture("default_avatar");
 
+      // Điều chỉnh kích thước avatar mặc định
       const borderWidth = borderAvatar.displayWidth * 0.8;
       const borderHeight = borderAvatar.displayHeight * 0.8;
       const scaleX = borderWidth / avatarImage.width;
@@ -580,12 +613,14 @@ export default class TopPlayerScene extends Phaser.Scene {
       avatarImage.setScale(Math.min(scaleX, scaleY));
     });
 
+    // Xử lý khi tải thành công
     this.load.once("complete", () => {
       this.load.setPath(oldPath);
 
       if (this.textures.exists(textureKey)) {
         avatarImage.setTexture(textureKey);
 
+        // Điều chỉnh kích thước avatar mới
         const borderWidth = borderAvatar.displayWidth * 0.8;
         const borderHeight = borderAvatar.displayHeight * 0.8;
         const scaleX = borderWidth / avatarImage.width;
@@ -593,7 +628,6 @@ export default class TopPlayerScene extends Phaser.Scene {
         const scale = Math.min(scaleX, scaleY);
         avatarImage.setScale(scale);
       } else {
-        console.error("Texture not found in cache:", textureKey);
         avatarImage.setTexture("default_avatar");
       }
     });
