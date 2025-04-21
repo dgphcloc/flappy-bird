@@ -1,14 +1,14 @@
 "use client";
-
+import MenuLoginScene from "./MenuLoginScene";
 export default class GamePlayScene extends Phaser.Scene {
   // Các hằng số
-  private readonly BIRD_SCALE = 1; // Tỉ lệ kích thước của chim so với ảnh gốc
-  private readonly BASE_GRAVITY = 0.4; // Giá trị cơ bản cho trọng lực (pixel/frame)
-  private readonly BASE_JUMP_FORCE = -7; // Giá trị cơ bản cho lực nhảy (pixel/frame)
+  private readonly BIRD_SCALE = 0.8; // Tỉ lệ kích thước của chim so với ảnh gốc
+  private readonly BASE_GRAVITY = 0.3; // Giá trị cơ bản cho trọng lực (pixel/frame)
+  private readonly BASE_JUMP_FORCE = -6; // Giá trị cơ bản cho lực nhảy (pixel/frame)
   private readonly BIRD_ANIMATION_FRAME_RATE = 10; // Tốc độ animation của chim (frame/giây)
   private readonly PIPE_SPEED = -240; // Tốc độ di chuyển của ống (pixel/giây)
-  private readonly INITIAL_PIPE_SPAWN_TIME = 1200; // Thời gian ban đầu
-  private readonly FAST_PIPE_SPAWN_TIME = 1000; // Thời gian sau khi đạt 50 điểm
+  private readonly INITIAL_PIPE_SPAWN_TIME = 1800; // Thời gian ban đầu
+  private readonly FAST_PIPE_SPAWN_TIME = 1200; // Thời gian sau khi đạt 50 điểm
   private readonly PIPE_GAP_PERCENT = 0.2; // Khoảng cách giữa 2 ống tính theo % chiều cao scene
   private readonly GROUND_SCROLL_X = 2; // Tốc độ cuộn của mặt đất (pixel/frame)
   private readonly REFERENCE_HEIGHT = 720; // Chiều cao tham chiếu để tính tỉ lệ (pixel)
@@ -23,16 +23,23 @@ export default class GamePlayScene extends Phaser.Scene {
   private ground1!: Phaser.GameObjects.TileSprite; // Mặt đất 1
   private ground2!: Phaser.GameObjects.TileSprite; // Mặt đất 2
   private groundX: number = 0; // Vị trí X của mặt đất
-  private score: number = 48; // Điểm số hiện tại
-  private scoreText!: Phaser.GameObjects.Text; // Text hiển thị điểm
+  private score: number = 0; // Điểm số hiện tại
   private passedPipes: Set<Phaser.Physics.Arcade.Sprite> = new Set(); // Tập hợp các ống đã vượt qua
   private pipePairs: Map<number, Phaser.Physics.Arcade.Sprite[]> = new Map(); // Map lưu các cặp ống
   private lastPipeId: number = 0; // ID của ống cuối cùng
   private pipeSpawnEvent!: Phaser.Time.TimerEvent; // Thêm biến để lưu sự kiện tạo ống
   private digitSprites: Phaser.GameObjects.Sprite[] = []; // Mảng lưu trữ các sprite số
+  private scoreSprites: Phaser.GameObjects.Sprite[] = []; // Mảng lưu trữ các sprite số
+  private bestScoreSprites: Phaser.GameObjects.Sprite[] = []; // Mảng lưu trữ các sprite số
+  private txtScore!: Phaser.GameObjects.Image; // Sprite background điểm số
+  private txtBest!: Phaser.GameObjects.Image; // Sprite background điểm số
+  private txtNewBest!: Phaser.GameObjects.Image; // Sprite background điểm số
   private scoreBg!: Phaser.GameObjects.Image; // Sprite background điểm số
+  private gameOverF!: Phaser.GameObjects.Image; // Sprite background điểm số
   private scoreContainer!: Phaser.GameObjects.Container; // Container lưu trữ các sprite số
-
+  private bestScoreContainer!: Phaser.GameObjects.Container; // Container lưu trữ các sprite số
+  private sprBtnReset!: Phaser.GameObjects.Sprite; // Sprite background điểm số
+  private sprBtnHome!: Phaser.GameObjects.Sprite; // Sprite background điểm số
   // Tính toán các giá trị dựa trên tỉ lệ kích thước scene
   private get gravity(): number {
     const scaleFactor = this.scale.height / this.REFERENCE_HEIGHT; // Tỉ lệ giữa chiều cao thực tế và chiều cao tham chiếu
@@ -59,6 +66,22 @@ export default class GamePlayScene extends Phaser.Scene {
     this.load.spritesheet("number_spr", "number_spritesheet.png", {
       frameWidth: 75,
       frameHeight: 95,
+    });
+    this.load.image("gameoverF", "FROM_GAMEOVER.png");
+    this.load.image("ScoreNormal", "txt_SCORE.png");
+    this.load.image("BestScore", "txt_BEST.png");
+    this.load.image("NewBestScore", "txt_NEWBEST.png");
+    this.load.spritesheet("score_spr", "score_spritesheet.png", {
+      frameWidth: 50,
+      frameHeight: 50,
+    });
+    this.load.spritesheet("btnRestart", "spr_btnReset.png", {
+      frameWidth: 105,
+      frameHeight: 74,
+    });
+    this.load.spritesheet("btnHome", "spr_btnHome.png", {
+      frameWidth: 105,
+      frameHeight: 74,
     });
   }
 
@@ -146,7 +169,7 @@ export default class GamePlayScene extends Phaser.Scene {
         start: 0,
         end: 3,
       }),
-      frameRate: 5,
+      frameRate: this.BIRD_ANIMATION_FRAME_RATE,
       repeat: -1,
     });
 
@@ -160,8 +183,6 @@ export default class GamePlayScene extends Phaser.Scene {
   }
 
   private createGround() {
-    const width = this.scale.width;
-    const height = this.scale.height;
     const widthGround = 1536;
     const heightGround = 468;
 
@@ -212,6 +233,230 @@ export default class GamePlayScene extends Phaser.Scene {
     this.scoreBg.setScale(0.5);
   }
 
+  private GameOverF() {
+    this.bestScoreContainer = this.add.container(0, 0);
+    this.bestScoreContainer.setDepth(10007);
+
+    // Center the container in the screen
+    this.bestScoreContainer.setPosition(
+      this.scale.width / 2,
+      this.scale.height / 2
+    );
+
+    this.gameOverF = this.add.image(0, 0, "gameoverF");
+    this.gameOverF.setOrigin(0.5, 0.5);
+    this.gameOverF.setDepth(10005);
+
+    // Calculate container scale based on screen dimensions
+    const baseWidth = this.gameOverF.width;
+    const targetWidth = this.scale.width * 0.9;
+    const containerScale = targetWidth / baseWidth;
+
+    // Apply scale to the entire container
+    this.bestScoreContainer.setScale(containerScale);
+
+    this.bestScoreContainer.add(this.gameOverF);
+  }
+  private GameOverBestScore() {
+    this.GameOverF();
+    this.btnRestart();
+    this.btnHome();
+    let fakebestScore = 1;
+    if (this.score > fakebestScore) {
+      this.newBestScore();
+      fakebestScore = this.score;
+    } else {
+      this.bestScore();
+      fakebestScore = fakebestScore;
+    }
+
+    let fakebestScoreString = fakebestScore.toString();
+
+    this.bestScoreSprites.forEach((sprite) => sprite.destroy());
+    this.bestScoreSprites = [];
+    const baseDigitWidthBest = 50;
+    const digitScaleBest = 0.8;
+    const scaledDigitWidthBest = baseDigitWidthBest * digitScaleBest;
+
+    const spacingBest = scaledDigitWidthBest * 0.85; // Khoảng cách giữa các số = 80% chiều rộng của số
+    const totalWidthBest =
+      spacingBest * (fakebestScoreString.length - 1) + scaledDigitWidthBest;
+
+    // Căn trái của dãy số để nó được căn giữa
+    const startXBest = -totalWidthBest / 2;
+    for (let i = 0; i < fakebestScoreString.length; i++) {
+      const digit = parseInt(fakebestScoreString[i]);
+      const sprite = this.add.sprite(
+        startXBest + i * spacingBest + scaledDigitWidthBest / 2, // Vị trí X với khoảng cách thu hẹp
+        this.txtBest.y + 50,
+        "score_spr",
+        digit
+      );
+      sprite.setOrigin(0.5, 0.5);
+      sprite.setDepth(10009);
+      sprite.setScale(1);
+      this.bestScoreContainer.add(sprite);
+      this.bestScoreSprites.push(sprite);
+    }
+
+    const scoreString = this.score.toString();
+    this.scoreSprites.forEach((sprite) => sprite.destroy());
+    this.scoreSprites = [];
+
+    const baseDigitWidth = 50;
+    const digitScale = 1;
+
+    // Tính toán chiều rộng thực tế của mỗi số sau khi scale
+    const scaledDigitWidth = baseDigitWidth * digitScale;
+
+    const spacing = scaledDigitWidth * 0.6; // Khoảng cách giữa các số = 80% chiều rộng của số
+    const totalWidth = spacing * (scoreString.length - 1) + scaledDigitWidth;
+
+    // Căn trái của dãy số để nó được căn giữa
+    const startX = -totalWidth / 2;
+
+    for (let i = 0; i < scoreString.length; i++) {
+      const digit = parseInt(scoreString[i]);
+      const sprite = this.add.sprite(
+        startX + i * spacing + scaledDigitWidth / 2, // Vị trí X với khoảng cách thu hẹp
+        this.txtScore.y + 40,
+        "score_spr",
+        digit
+      );
+      sprite.setOrigin(0.5, 0.5);
+      sprite.setDepth(10009);
+      sprite.setScale(digitScale);
+      this.bestScoreContainer.add(sprite);
+      this.scoreSprites.push(sprite);
+    }
+  }
+
+  private bestScore() {
+    this.txtScore = this.add.image(
+      0,
+      -this.gameOverF.displayHeight * 0.17,
+      "ScoreNormal"
+    );
+    this.txtScore.setOrigin(0.5, 0.5);
+    this.txtScore.setDepth(10009);
+    this.txtScore.setScale(1);
+    this.bestScoreContainer.add(this.txtScore);
+
+    this.txtBest = this.add.image(
+      0,
+      this.gameOverF.displayHeight * 0.04,
+      "BestScore"
+    );
+    this.txtBest.setOrigin(0.5, 0.5);
+    this.txtBest.setDepth(10009);
+    this.txtBest.setScale(1);
+    this.bestScoreContainer.add(this.txtBest);
+  }
+  private newBestScore() {
+    this.txtScore = this.add.image(
+      0,
+      -this.gameOverF.displayHeight * 0.17,
+      "ScoreNormal"
+    );
+    this.txtScore.setOrigin(0.5, 0.5);
+    this.txtScore.setDepth(10009);
+    this.txtScore.setScale(1);
+    this.bestScoreContainer.add(this.txtScore);
+
+    this.txtBest = this.add.image(
+      0,
+      this.gameOverF.displayHeight * 0.04,
+      "NewBestScore"
+    );
+    this.txtBest.setOrigin(0.5, 0.5);
+    this.txtBest.setDepth(10009);
+    this.txtBest.setScale(1);
+    this.bestScoreContainer.add(this.txtBest);
+  }
+  private resetEvent = () => {
+    this.score = 0;
+    this.digitSprites = [];
+    if (this.scoreContainer) {
+      this.scoreContainer.destroy();
+    }
+    if (this.scoreBg) {
+      this.scoreBg.destroy();
+    }
+    this.passedPipes.clear();
+    this.pipePairs.clear();
+    this.lastPipeId = 0;
+    this.firstClick = false;
+    this.birdVelocity = 0;
+  };
+
+  private btnRestart() {
+    this.sprBtnReset = this.add.sprite(0, 0, "btnRestart", 0);
+    this.sprBtnReset.setOrigin(0.5, 0.5);
+    this.sprBtnReset.setDepth(10001);
+    this.sprBtnReset.setScale(1.3);
+    this.sprBtnReset.setPosition(
+      -this.gameOverF.displayWidth * 0.2,
+      this.gameOverF.displayHeight * 0.5
+    );
+
+    this.sprBtnReset.setInteractive();
+
+    this.sprBtnReset.on("pointerdown", () => {
+      this.sprBtnReset.setFrame(2);
+      this.resetEvent();
+      // Khởi động lại scene
+      this.scene.restart();
+    });
+    this.sprBtnReset.on("pointerover", () => {
+      this.sprBtnReset.setFrame(1);
+    });
+    this.sprBtnReset.on("pointerout", () => {
+      this.sprBtnReset.setFrame(0);
+    });
+    this.sprBtnReset.on("pointerup", () => {
+      this.sprBtnReset.setFrame(0);
+    });
+
+    this.bestScoreContainer.add(this.sprBtnReset);
+
+    // Thêm sự kiện nhấn phím Space để kích hoạt nút Restart
+    this.input.keyboard?.addKey("SPACE").on("down", () => {
+      this.sprBtnReset.setFrame(2);
+      setTimeout(() => {
+        this.sprBtnReset.setFrame(0);
+        this.resetEvent();
+        this.scene.restart();
+      }, 100);
+    });
+  }
+  private btnHome() {
+    this.sprBtnHome = this.add.sprite(0, 0, "btnHome", 0);
+    this.sprBtnHome.setOrigin(0.5, 0.5);
+    this.sprBtnHome.setDepth(10001);
+    this.sprBtnHome.setScale(1.3);
+    this.sprBtnHome.setPosition(
+      this.gameOverF.displayWidth * 0.2,
+      this.gameOverF.displayHeight * 0.5
+    );
+    this.sprBtnHome.setInteractive();
+    this.sprBtnHome.on("pointerdown", () => {
+      this.sprBtnHome.setFrame(2);
+      this.scene.stop("GamePlayScene");
+      const menuLoginScene = this.scene.get("MenuLoginScene") as any;
+      this.resetEvent();
+      menuLoginScene.returnMenu();
+      const backgroundScene = this.scene.get("BackgroundScene") as any;
+      backgroundScene.showGround();
+    });
+    this.sprBtnHome.on("pointerover", () => {
+      this.sprBtnHome.setFrame(1);
+    });
+    this.sprBtnHome.on("pointerout", () => {
+      this.sprBtnHome.setFrame(0);
+    });
+    this.bestScoreContainer.add(this.sprBtnHome);
+  }
+
   private createScoreSprites() {
     if (this.scoreContainer) {
       this.scoreContainer.destroy();
@@ -256,8 +501,6 @@ export default class GamePlayScene extends Phaser.Scene {
 
     // Căn giữa trong scoreBg
     const startX = (scoreWidth - totalWidth) / 2;
-    const startY = (scoreHeight - digitHeight) / 2;
-
     // Tạo sprite cho mỗi chữ số
     for (let i = 0; i < scoreString.length; i++) {
       const digit = parseInt(scoreString[i]);
@@ -378,7 +621,7 @@ export default class GamePlayScene extends Phaser.Scene {
     this.createScoreSprites();
 
     // Tăng tốc độ khi đạt 50 điểm
-    if (this.score === 50) {
+    if (this.score === 20) {
       // Dừng sự kiện tạo ống cũ
       this.pipeSpawnEvent.destroy();
 
@@ -395,57 +638,60 @@ export default class GamePlayScene extends Phaser.Scene {
   private gameOver() {
     this.isActive = false;
     this.DeactiveScene();
+    this.GameOverBestScore();
+    this.scoreContainer.destroy();
+    this.digitSprites.forEach((sprite) => sprite.destroy());
 
     // Hiển thị thông báo game over
-    const gameOverText = this.add.text(
-      this.scale.width / 2,
-      this.scale.height / 2,
-      "Game Over!\nScore: " + this.score,
-      {
-        fontSize: "48px",
-        color: "#fff",
-        stroke: "#000",
-        strokeThickness: 4,
-        align: "center",
-      }
-    );
-    gameOverText.setOrigin(0.5);
-    gameOverText.setDepth(10001);
+    // const gameOverText = this.add.text(
+    //   this.scale.width / 2,
+    //   this.scale.height / 2,
+    //   "Game Over!\nScore: " + this.score,
+    //   {
+    //     fontSize: "48px",
+    //     color: "#fff",
+    //     stroke: "#000",
+    //     strokeThickness: 4,
+    //     align: "center",
+    //   }
+    // );
+    // gameOverText.setOrigin(0.5);
+    // gameOverText.setDepth(10001);
 
     // Thêm nút restart
-    const restartButton = this.add.text(
-      this.scale.width / 2,
-      this.scale.height / 2 + 100,
-      "Restart",
-      {
-        fontSize: "32px",
-        color: "#fff",
-        stroke: "#000",
-        strokeThickness: 4,
-      }
-    );
-    restartButton.setOrigin(0.5);
-    restartButton.setDepth(10001);
-    restartButton.setInteractive();
-    restartButton.on("pointerdown", () => {
-      // Reset trạng thái game
-      this.score = 0;
-      this.digitSprites = [];
-      if (this.scoreContainer) {
-        this.scoreContainer.destroy();
-      }
-      if (this.scoreBg) {
-        this.scoreBg.destroy();
-      }
-      this.passedPipes.clear();
-      this.pipePairs.clear();
-      this.lastPipeId = 0;
-      this.firstClick = false;
-      this.birdVelocity = 0;
+    // const restartButton = this.add.text(
+    //   this.scale.width / 2,
+    //   this.scale.height / 2 + 100,
+    //   "Restart",
+    //   {
+    //     fontSize: "32px",
+    //     color: "#fff",
+    //     stroke: "#000",
+    //     strokeThickness: 4,
+    //   }
+    // );
+    // restartButton.setOrigin(0.5);
+    // restartButton.setDepth(10001);
+    // restartButton.setInteractive();
+    // restartButton.on("pointerdown", () => {
+    //   // Reset trạng thái game
+    //   this.score = 0;
+    //   this.digitSprites = [];
+    //   if (this.scoreContainer) {
+    //     this.scoreContainer.destroy();
+    //   }
+    //   if (this.scoreBg) {
+    //     this.scoreBg.destroy();
+    //   }
+    //   this.passedPipes.clear();
+    //   this.pipePairs.clear();
+    //   this.lastPipeId = 0;
+    //   this.firstClick = false;
+    //   this.birdVelocity = 0;
 
-      // Khởi động lại scene
-      this.scene.restart();
-    });
+    //   // Khởi động lại scene
+    //   this.scene.restart();
+    // });
   }
 
   // Quản lý trạng thái Scene

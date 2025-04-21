@@ -1,9 +1,7 @@
 "use client";
 import LoginScene from "./LoginScene";
-import RegisterScene from "./RegisterScene";
 import getUserSession from "@/lib/supabase/getUserSession";
-import GamePlayScene from "./GamePlayScene";
-
+import TopPlayerScene from "./TopPlayerScene";
 export default class MenuLoginScene extends Phaser.Scene {
   // Game objects
   private birdMainBG!: Phaser.GameObjects.Sprite;
@@ -28,6 +26,13 @@ export default class MenuLoginScene extends Phaser.Scene {
   }
 
   // Public methods
+  public returnMenu() {
+    if (!this.scene.isActive("MenuLoginScene")) {
+      this.scene.start("MenuLoginScene");
+    } else {
+      this.showMenu();
+    }
+  }
   public showMenu() {
     if (this.ContainerMenu) {
       this.ContainerMenu.setVisible(true);
@@ -37,6 +42,8 @@ export default class MenuLoginScene extends Phaser.Scene {
         duration: 500,
         ease: "Power2",
       });
+      // const groundScene = this.scene.get("BackgroundScene") as any;
+      // groundScene.showGround();
     }
   }
 
@@ -83,6 +90,9 @@ export default class MenuLoginScene extends Phaser.Scene {
     }
     if (!this.scene.isActive("RegisterScene")) {
       this.scene.launch("RegisterScene");
+    }
+    if (!this.scene.isActive("TopPlayerScene")) {
+      this.scene.launch("TopPlayerScene");
     }
   }
 
@@ -190,7 +200,8 @@ export default class MenuLoginScene extends Phaser.Scene {
       case "play":
         // Launch GamePlayScene
         if (!this.scene.isActive("GamePlayScene")) {
-          this.scene.stop();
+          // this.isLoggedInChange(false);
+          this.ContainerMenu.setVisible(false);
           this.scene.start("GamePlayScene");
         }
         break;
@@ -202,7 +213,16 @@ export default class MenuLoginScene extends Phaser.Scene {
 
       case "topPlayer":
         // Xử lý khi click nút top player
-        console.log("Show top players");
+        // if (!this.scene.isActive("TopPlayerScene")) {
+        //   this.scene.start("TopPlayerScene");
+        // }
+        const topPlayerScene = this.scene.get(
+          "TopPlayerScene"
+        ) as TopPlayerScene;
+        topPlayerScene.showContainerTopPlayer();
+        this.ContainerMenu.setVisible(false);
+        this.birdImageContainer.setVisible(true);
+
         break;
 
       case "settings":
