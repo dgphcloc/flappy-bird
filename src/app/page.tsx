@@ -2,9 +2,13 @@
 import Profile from "@/components/profile";
 import useSupabaseClient from "@/lib/supabase/client";
 import { Button } from "@mantine/core";
+import { createBrowserClient } from "@supabase/ssr";
 
 export default function AdminPage() {
-  const supabase = useSupabaseClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const loginWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({

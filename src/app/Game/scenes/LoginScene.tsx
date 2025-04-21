@@ -8,6 +8,7 @@ import {
 } from "../constants/regexPatterns";
 import { createInputHandlers } from "../constants/inputUtils";
 import { ErrorCodes, ErrorMessages } from "@/app/shared/errorMessages";
+import { createBrowserClient } from "@supabase/ssr";
 
 export default class LoginScene extends Phaser.Scene {
   private backgroundFrame!: Phaser.GameObjects.Image;
@@ -190,6 +191,20 @@ export default class LoginScene extends Phaser.Scene {
     });
     this.iconGG.on("pointerup", () => {
       this.iconGG.setFrame(1);
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+
+      const loginWithGoogle = async () => {
+        await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${location.origin}/api/auth/callback`,
+          },
+        });
+      };
+      loginWithGoogle();
       console.log("click iconGG ");
     });
   }
@@ -213,7 +228,19 @@ export default class LoginScene extends Phaser.Scene {
     });
     this.iconFB.on("pointerup", () => {
       this.iconFB.setFrame(1);
-      console.log("click iconFB ");
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const loginWithFacebook = async () => {
+        await supabase.auth.signInWithOAuth({
+          provider: "facebook",
+          options: {
+            redirectTo: `${location.origin}/api/auth/callback`,
+          },
+        });
+      };
+      loginWithFacebook();
     });
   }
 
