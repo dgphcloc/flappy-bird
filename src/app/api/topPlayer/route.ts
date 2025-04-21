@@ -9,7 +9,9 @@ export async function GET() {
         status: 404,
       });
     }
-
+    toPlayers.data?.forEach((player, index) => {
+      player.rank = index + 1;
+    });
     return new Response(JSON.stringify({ toPlayers, me }), {
       headers: { "Content-Type": "application/json" },
       status: 200,
