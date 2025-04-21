@@ -2,8 +2,7 @@
 
 import createSupabaseAdminAuthClient from "@/lib/supabase/admin";
 import createSupabaseServerClient from "@/lib/supabase/server";
-import { generateUserEmailTemp } from "@/helpers/helperStore";
-import { ErrorCodes, ErrorMessages } from "@/app/shared/errorMessages";
+import getUserSession from "@/lib/supabase/getUserSession";
 
 export type SignInUsernameInput = {
   password: string;
@@ -19,8 +18,6 @@ export async function signInWithUsernameAndPassword(user: SignInUsernameInput) {
   try {
     const supabaseAdmin = await createSupabaseAdminAuthClient();
     const supabaseClient = await createSupabaseServerClient();
-
-    // Tìm user bằng username
     const { data, error: profileError } = await supabaseAdmin
       .from("profiles")
       .select("id")
@@ -35,8 +32,6 @@ export async function signInWithUsernameAndPassword(user: SignInUsernameInput) {
     if (!data) {
       throw new Error("User not found");
     }
-
-    // Lấy thông tin user từ auth
     const { data: userData, error: userError } =
       await supabaseAdmin.auth.admin.getUserById(data.id);
 
@@ -107,8 +102,37 @@ export const getTopHighestPlayer = async (quantity: number) => {
   const supabase = await createSupabaseServerClient();
   const result = await supabase
     .from("profiles")
-    .select("*")
+    .select("*", { count: "exact" })
     .order("score", { ascending: false })
     .limit(quantity);
   return result;
+};
+
+export const getProfileRank = async () => {
+  const {
+    data: { session },
+  } = await getUserSession();
+  const id = session?.user.id;
+  if (!id) return;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("get_profile_rank", {
+    target_id: id,
+  });
+
+  if (error) {
+    return null;
+  } else {
+    return data;
+  }
+};
+
+export const getCurrentUserProfile = async () => {
+  const {
+    data: { session },
+  } = await getUserSession();
+  if (!session) return null;
+  const id = session.user.id;
+  const supabase = await createSupabaseAdminAuthClient();
+  const { data } = await supabase.from("profiles").select("*").eq("id", id);
+  return data;
 };
