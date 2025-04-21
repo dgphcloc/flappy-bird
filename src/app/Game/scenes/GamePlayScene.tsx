@@ -2,12 +2,12 @@
 import MenuLoginScene from "./MenuLoginScene";
 export default class GamePlayScene extends Phaser.Scene {
   // Các hằng số
-  private readonly BIRD_SCALE = 1; // Tỉ lệ kích thước của chim so với ảnh gốc
+  private readonly BIRD_SCALE = 0.8; // Tỉ lệ kích thước của chim so với ảnh gốc
   private readonly BASE_GRAVITY = 0.3; // Giá trị cơ bản cho trọng lực (pixel/frame)
   private readonly BASE_JUMP_FORCE = -6; // Giá trị cơ bản cho lực nhảy (pixel/frame)
   private readonly BIRD_ANIMATION_FRAME_RATE = 10; // Tốc độ animation của chim (frame/giây)
   private readonly PIPE_SPEED = -240; // Tốc độ di chuyển của ống (pixel/giây)
-  private readonly INITIAL_PIPE_SPAWN_TIME = 1500; // Thời gian ban đầu
+  private readonly INITIAL_PIPE_SPAWN_TIME = 1800; // Thời gian ban đầu
   private readonly FAST_PIPE_SPAWN_TIME = 1200; // Thời gian sau khi đạt 50 điểm
   private readonly PIPE_GAP_PERCENT = 0.2; // Khoảng cách giữa 2 ống tính theo % chiều cao scene
   private readonly GROUND_SCROLL_X = 2; // Tốc độ cuộn của mặt đất (pixel/frame)
@@ -400,6 +400,7 @@ export default class GamePlayScene extends Phaser.Scene {
     );
 
     this.sprBtnReset.setInteractive();
+
     this.sprBtnReset.on("pointerdown", () => {
       this.sprBtnReset.setFrame(2);
       this.resetEvent();
@@ -417,6 +418,16 @@ export default class GamePlayScene extends Phaser.Scene {
     });
 
     this.bestScoreContainer.add(this.sprBtnReset);
+
+    // Thêm sự kiện nhấn phím Space để kích hoạt nút Restart
+    this.input.keyboard?.addKey("SPACE").on("down", () => {
+      this.sprBtnReset.setFrame(2);
+      setTimeout(() => {
+        this.sprBtnReset.setFrame(0);
+        this.resetEvent();
+        this.scene.restart();
+      }, 100);
+    });
   }
   private btnHome() {
     this.sprBtnHome = this.add.sprite(0, 0, "btnHome", 0);

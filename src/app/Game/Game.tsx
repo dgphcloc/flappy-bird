@@ -8,6 +8,7 @@ import { Box } from "@mantine/core";
 import LoginScene from "./scenes/LoginScene";
 import RegisterScene from "./scenes/RegisterScene";
 import GamePlayScene from "./scenes/GamePlayScene";
+import TopPlayerScene from "./scenes/TopPlayerScene";
 const Game = () => {
   const gameRef = useRef<HTMLDivElement>(null);
 
@@ -30,6 +31,7 @@ const Game = () => {
         LoginScene,
         RegisterScene,
         GamePlayScene,
+        TopPlayerScene,
       ],
       scale: {
         mode: Phaser.Scale.FIT,

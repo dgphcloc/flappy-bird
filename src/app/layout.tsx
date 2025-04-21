@@ -1,6 +1,10 @@
 import { Providers } from "@/components/providers";
 import { MantineProvider } from "@mantine/core";
 
+import Head from "next/head";
+import { Kavoon } from "next/font/google";
+
+const kavoon = Kavoon({ weight: "400", subsets: ["latin"] });
 export default function RootLayout({
   children,
 }: {
@@ -8,7 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={kavoon.className}>
         <MantineProvider>
           <Providers>{children}</Providers>
         </MantineProvider>
