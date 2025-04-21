@@ -1,9 +1,7 @@
 "use client";
 import LoginScene from "./LoginScene";
-import RegisterScene from "./RegisterScene";
 import getUserSession from "@/lib/supabase/getUserSession";
-import GamePlayScene from "./GamePlayScene";
-
+import TopPlayerScene from "./TopPlayerScene";
 export default class MenuLoginScene extends Phaser.Scene {
   // Game objects
   private birdMainBG!: Phaser.GameObjects.Sprite;
@@ -92,6 +90,9 @@ export default class MenuLoginScene extends Phaser.Scene {
     }
     if (!this.scene.isActive("RegisterScene")) {
       this.scene.launch("RegisterScene");
+    }
+    if (!this.scene.isActive("TopPlayerScene")) {
+      this.scene.launch("TopPlayerScene");
     }
   }
 
@@ -212,7 +213,16 @@ export default class MenuLoginScene extends Phaser.Scene {
 
       case "topPlayer":
         // Xử lý khi click nút top player
-        console.log("Show top players");
+        // if (!this.scene.isActive("TopPlayerScene")) {
+        //   this.scene.start("TopPlayerScene");
+        // }
+        const topPlayerScene = this.scene.get(
+          "TopPlayerScene"
+        ) as TopPlayerScene;
+        topPlayerScene.showContainerTopPlayer();
+        this.ContainerMenu.setVisible(false);
+        this.birdImageContainer.setVisible(true);
+
         break;
 
       case "settings":
