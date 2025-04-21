@@ -1,5 +1,6 @@
 import { Providers } from "@/components/providers";
 import { MantineProvider } from "@mantine/core";
+import "@mantine/charts/styles.css";
 
 import Head from "next/head";
 import { Kavoon } from "next/font/google";

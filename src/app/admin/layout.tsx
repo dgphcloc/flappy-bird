@@ -3,6 +3,8 @@ import { MantineProvider } from "@mantine/core";
 import AdminLayout from "./adminLayout";
 import { Notifications } from "@mantine/notifications";
 import "@mantine/notifications/styles.css";
+import "@mantine/charts/styles.css";
+
 export default function RootLayout({
   children,
 }: {

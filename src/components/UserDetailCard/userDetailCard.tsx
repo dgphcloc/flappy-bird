@@ -78,6 +78,7 @@ export default function UserDetailCard({
     console.log("delete");
     close();
     const supabase = await createSupabaseAdminAuthClient();
+    await supabase.auth.admin.deleteUser(user.id);
     const { error } = await supabase
       .from("profiles")
       .delete()

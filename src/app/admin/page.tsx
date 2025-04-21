@@ -1,6 +1,8 @@
 "use client";
 
-import AdminLayout from "./adminLayout";
+import RegisterStatisToday from "@/components/RegisterStatisToday/RegisterStatisToday";
+import UserSignupStatisticsComponent from "@/components/userSignupStatisticsComponent/userSignupStatisticsComponent";
+import { Box } from "@mantine/core";
 
 export default function AdminPage() {
   /**
@@ -8,5 +10,12 @@ export default function AdminPage() {
    * tong so user dang ki trong ngay, tuan,thang,nam => cho phep chon ngay thang nam
    *
    */
-  return <div>Đây là trang admin</div>;
+  return (
+    <>
+      <Box p={40}>
+        <RegisterStatisToday />
+        <UserSignupStatisticsComponent />
+      </Box>
+    </>
+  );
 }
