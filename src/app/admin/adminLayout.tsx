@@ -20,7 +20,7 @@ export default function AdminLayout({ children }: Props) {
         collapsed: { mobile: !mobileOpened, desktop: !desktopOpened },
       }}
     >
-      <AppShell.Header style={{ backgroundColor: "#4c6ef5" }}>
+      <AppShell.Header style={{ backgroundColor: "#16161D" }}>
         <Group h="100%" px="md">
           <Burger
             opened={mobileOpened}
@@ -36,7 +36,7 @@ export default function AdminLayout({ children }: Props) {
           />
         </Group>
       </AppShell.Header>
-      <AppShell.Navbar style={{ backgroundColor: "#4c6ef5" }}>
+      <AppShell.Navbar style={{ backgroundColor: "#16161D" }}>
         <Navigation />
       </AppShell.Navbar>
       <AppShell.Main>

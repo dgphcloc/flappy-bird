@@ -1,14 +1,14 @@
 .link {
-    color: white;
-    &[data-selected] {
-        background-color: white;
-        color: #4c6ef5;
-        border-right: 1px solid #4c6ef5;
-    }
+  color: white;
+  &[data-selected] {
+    background-color: white;
+    color: #16161d;
+    border-right: 1px solid #4c6ef5;
+  }
 
-    &:hover{
-        color:#4c6ef5 ;
-    }
+  &:hover {
+    color: #16161d;
+  }
 }
 .iconBold {
   font-weight: bold;
