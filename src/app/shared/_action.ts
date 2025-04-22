@@ -133,6 +133,10 @@ export const getCurrentUserProfile = async () => {
   if (!session) return null;
   const id = session.user.id;
   const supabase = await createSupabaseAdminAuthClient();
-  const { data } = await supabase.from("profiles").select("*").eq("id", id);
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", id)
+    .single();
   return data;
 };
