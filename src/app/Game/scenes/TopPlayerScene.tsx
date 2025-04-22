@@ -56,6 +56,8 @@ export default class TopPlayerScene extends Phaser.Scene {
   private scoreTopPlayer!: Phaser.GameObjects.Sprite;
   private digitSprites: Phaser.GameObjects.Sprite[] = [];
   private nameText!: Phaser.GameObjects.Text;
+  private isLoadingApi: boolean = false;
+  private needRefresh: boolean = false;
 
   // Dữ liệu từ API
   private apiTopPlayers: PlayerData[] = [];
@@ -134,6 +136,11 @@ export default class TopPlayerScene extends Phaser.Scene {
 
   public API_TopPlayer = async () => {
     try {
+      if (this.isLoadingApi) return;
+
+      // Đánh dấu đang tải dữ liệu
+      this.isLoadingApi = true;
+
       const response = await fetch("/api/topPlayer", {
         method: "GET",
         headers: {
@@ -182,22 +189,33 @@ export default class TopPlayerScene extends Phaser.Scene {
       // Hiển thị thông tin người chơi hiện tại nếu UI đang hiển thị
       if (
         this.containerTopPlayer &&
-        this.containerTopPlayer.visible &&
-        this.apiCurrentPlayer
+        (this.containerTopPlayer.visible || this.needRefresh)
       ) {
-        this.displayPlayer(this.apiCurrentPlayer, true);
-      }
+        // Xóa các hiển thị cũ
+        this.clearAllPlayerDisplays();
 
-      // Hiển thị danh sách top players nếu có dữ liệu
-      if (
-        this.apiTopPlayers.length > 0 &&
-        this.containerTopPlayer &&
-        this.containerTopPlayer.visible
-      ) {
-        this.displayAllPlayers(this.apiTopPlayers);
+        // Hiển thị danh sách người chơi top
+        if (this.apiTopPlayers.length > 0) {
+          this.displayAllPlayers(this.apiTopPlayers);
+        } else {
+          // Nếu không có dữ liệu, dùng dữ liệu test
+          this.displayAllPlayers(this.testPlayerData);
+        }
+
+        // Hiển thị người chơi hiện tại (với tham số true để có hiệu ứng đặc biệt)
+        if (this.apiCurrentPlayer) {
+          this.displayPlayer(this.apiCurrentPlayer, true);
+        }
+
+        // Reset cờ làm mới - đã hoàn thành việc cập nhật
+        this.needRefresh = false;
       }
     } catch (error) {
+      // Xử lý lỗi
       console.error("API error:", error);
+    } finally {
+      // Đảm bảo luôn đánh dấu đã tải xong, dù có lỗi hay không
+      this.isLoadingApi = false;
     }
   };
 

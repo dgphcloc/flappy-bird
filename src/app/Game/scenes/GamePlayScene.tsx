@@ -40,6 +40,7 @@ export default class GamePlayScene extends Phaser.Scene {
   private bestScoreContainer!: Phaser.GameObjects.Container; // Container lưu trữ các sprite số
   private sprBtnReset!: Phaser.GameObjects.Sprite; // Sprite background điểm số
   private sprBtnHome!: Phaser.GameObjects.Sprite; // Sprite background điểm số
+  private bestScoredata!: number; // Điểm số tốt nhất
   // Tính toán các giá trị dựa trên tỉ lệ kích thước scene
   private get gravity(): number {
     const scaleFactor = this.scale.height / this.REFERENCE_HEIGHT; // Tỉ lệ giữa chiều cao thực tế và chiều cao tham chiếu
@@ -98,6 +99,8 @@ export default class GamePlayScene extends Phaser.Scene {
       backgroundScene.hideGround();
     }
 
+    this.getScore();
+
     // Tạo các đối tượng game
     this.createGround();
     this.createPipes();
@@ -141,12 +144,19 @@ export default class GamePlayScene extends Phaser.Scene {
     }
   }
 
-  private async updateScore() {
-    const score = 300;
+  private async getScore() {
+    const response = await fetch("/api/auth/me", {
+      method: "GET",
+    });
 
+    const data = await response.json();
+    this.bestScoredata = data.user[0].score;
+  }
+
+  private async updateScore() {
     const response = await fetch("/api/updateScore", {
       method: "POST",
-      body: JSON.stringify({ score }),
+      body: JSON.stringify({ score: this.score }),
     });
 
     const data = await response.json();
@@ -273,18 +283,17 @@ export default class GamePlayScene extends Phaser.Scene {
     this.GameOverF();
     this.btnRestart();
     this.btnHome();
-    let fakebestScore = 1;
-    if (this.score > fakebestScore) {
+    if (this.score > this.bestScoredata) {
       this.updateScore();
       this.refreshTopPlayer();
       this.newBestScore();
-      fakebestScore = this.score;
+      this.bestScoredata = this.score;
     } else {
       this.bestScore();
-      fakebestScore = fakebestScore;
+      let fakebestScore = this.bestScoredata;
     }
 
-    let fakebestScoreString = fakebestScore.toString();
+    let fakebestScoreString = this.bestScoredata.toString();
 
     this.bestScoreSprites.forEach((sprite) => sprite.destroy());
     this.bestScoreSprites = [];
@@ -347,14 +356,9 @@ export default class GamePlayScene extends Phaser.Scene {
   private refreshTopPlayer() {
     if (this.scene.get("TopPlayerScene")) {
       const topPlayerScene = this.scene.get("TopPlayerScene") as any;
-
       // Đặt cờ để thông báo cần làm mới dữ liệu
       topPlayerScene.needRefresh = true;
-
-      // Gọi API để lấy dữ liệu mới
       topPlayerScene.API_TopPlayer();
-
-      console.log("Top player data refreshed after score update");
     }
   }
 
