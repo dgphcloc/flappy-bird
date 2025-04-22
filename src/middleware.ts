@@ -31,9 +31,9 @@ export async function middleware(request: NextRequest) {
   /**
    * check authen
    */
-  // if (!session) {
-  //   return NextResponse.redirect(new URL("/signInAdmin", request.url));
-  // }
+  if (!session) {
+    return NextResponse.redirect(new URL("/signInAdmin", request.url));
+  }
 
   /**
    * check admin role
