@@ -1,5 +1,5 @@
 "use client";
-import MenuLoginScene from "./MenuLoginScene";
+import TopPlayerScene from "./TopPlayerScene";
 export default class GamePlayScene extends Phaser.Scene {
   // Các hằng số
   private readonly BIRD_SCALE = 0.8; // Tỉ lệ kích thước của chim so với ảnh gốc
@@ -141,6 +141,18 @@ export default class GamePlayScene extends Phaser.Scene {
     }
   }
 
+  private async updateScore() {
+    const score = 300;
+
+    const response = await fetch("/api/updateScore", {
+      method: "POST",
+      body: JSON.stringify({ score }),
+    });
+
+    const data = await response.json();
+    console.log(data);
+  }
+
   private setupInput() {
     this.input.keyboard?.on("keydown-SPACE", () => this.jump());
     this.input.on("pointerdown", () => this.jump());
@@ -263,6 +275,8 @@ export default class GamePlayScene extends Phaser.Scene {
     this.btnHome();
     let fakebestScore = 1;
     if (this.score > fakebestScore) {
+      this.updateScore();
+      this.refreshTopPlayer();
       this.newBestScore();
       fakebestScore = this.score;
     } else {
@@ -328,6 +342,19 @@ export default class GamePlayScene extends Phaser.Scene {
       sprite.setScale(digitScale);
       this.bestScoreContainer.add(sprite);
       this.scoreSprites.push(sprite);
+    }
+  }
+  private refreshTopPlayer() {
+    if (this.scene.get("TopPlayerScene")) {
+      const topPlayerScene = this.scene.get("TopPlayerScene") as any;
+
+      // Đặt cờ để thông báo cần làm mới dữ liệu
+      topPlayerScene.needRefresh = true;
+
+      // Gọi API để lấy dữ liệu mới
+      topPlayerScene.API_TopPlayer();
+
+      console.log("Top player data refreshed after score update");
     }
   }
 
@@ -636,62 +663,58 @@ export default class GamePlayScene extends Phaser.Scene {
   }
 
   private gameOver() {
+    if (!this.isActive) return; // Tránh gọi nhiều lần
+
     this.isActive = false;
-    this.DeactiveScene();
-    this.GameOverBestScore();
-    this.scoreContainer.destroy();
-    this.digitSprites.forEach((sprite) => sprite.destroy());
 
-    // Hiển thị thông báo game over
-    // const gameOverText = this.add.text(
-    //   this.scale.width / 2,
-    //   this.scale.height / 2,
-    //   "Game Over!\nScore: " + this.score,
-    //   {
-    //     fontSize: "48px",
-    //     color: "#fff",
-    //     stroke: "#000",
-    //     strokeThickness: 4,
-    //     align: "center",
-    //   }
-    // );
-    // gameOverText.setOrigin(0.5);
-    // gameOverText.setDepth(10001);
+    // Hiệu ứng khi chết
+    this.playDeathEffect();
 
-    // Thêm nút restart
-    // const restartButton = this.add.text(
-    //   this.scale.width / 2,
-    //   this.scale.height / 2 + 100,
-    //   "Restart",
-    //   {
-    //     fontSize: "32px",
-    //     color: "#fff",
-    //     stroke: "#000",
-    //     strokeThickness: 4,
-    //   }
-    // );
-    // restartButton.setOrigin(0.5);
-    // restartButton.setDepth(10001);
-    // restartButton.setInteractive();
-    // restartButton.on("pointerdown", () => {
-    //   // Reset trạng thái game
-    //   this.score = 0;
-    //   this.digitSprites = [];
-    //   if (this.scoreContainer) {
-    //     this.scoreContainer.destroy();
-    //   }
-    //   if (this.scoreBg) {
-    //     this.scoreBg.destroy();
-    //   }
-    //   this.passedPipes.clear();
-    //   this.pipePairs.clear();
-    //   this.lastPipeId = 0;
-    //   this.firstClick = false;
-    //   this.birdVelocity = 0;
+    // Dừng animation bay của chim
+    this.bird.anims.stop();
 
-    //   // Khởi động lại scene
-    //   this.scene.restart();
-    // });
+    // Tạo hiệu ứng nhấp nháy khi chết
+    this.cameras.main.shake(300, 0.02);
+    this.cameras.main.flash(300, 255, 0, 0);
+
+    // Cho chim rơi xuống đất với hiệu ứng vật lý
+    this.bird.setTint(0xff0000); // Tô đỏ khi chết
+    this.bird.setVelocityY(300);
+    this.bird.setAngularVelocity(600); // Xoay tròn khi rơi
+
+    // Đặt timeout để hiển thị màn hình game over sau khi hiệu ứng chết hoàn thành
+    this.time.delayedCall(1000, () => {
+      this.DeactiveScene();
+      this.GameOverBestScore();
+      this.scoreContainer.destroy();
+      this.digitSprites.forEach((sprite) => sprite.destroy());
+    });
+  }
+
+  // Phương thức mới để tạo hiệu ứng chết
+  private playDeathEffect() {
+    // Tạo particles cho hiệu ứng vỡ
+    const particles = this.add.particles(0, 0, "birdblue_spr", {
+      frame: 0,
+      quantity: 10,
+      speed: { min: 100, max: 200 },
+      scale: { start: 0.4, end: 0 },
+      lifespan: 800,
+      gravityY: 300,
+      emitting: false,
+    });
+
+    // Đặt vị trí particles tại vị trí chim
+    particles.setPosition(this.bird.x, this.bird.y);
+    particles.setDepth(100);
+
+    // Phát ra particles
+    particles.explode();
+
+    // Phát âm thanh chết (nếu có)
+    if (this.sound.get("hit")) {
+      this.sound.play("hit");
+    }
   }
 
   // Quản lý trạng thái Scene

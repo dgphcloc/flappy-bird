@@ -13,7 +13,9 @@ const publicPaths = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
+  if (pathname.startsWith("/signInAdmin")) {
+    return NextResponse.next();
+  }
   if (
     publicPaths.some((path) => {
       const regex = new RegExp(`^${path.replace("*", ".*")}$`);
