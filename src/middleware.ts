@@ -12,7 +12,9 @@ const publicPaths = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
+  if (pathname.startsWith("/signInAdmin")) {
+    return NextResponse.next();
+  }
   if (
     publicPaths.some((path) => {
       const regex = new RegExp(`^${path.replace("*", ".*")}$`);
@@ -29,9 +31,9 @@ export async function middleware(request: NextRequest) {
   /**
    * check authen
    */
-  if (!session) {
-    return NextResponse.redirect(new URL("/signInAdmin", request.url));
-  }
+  // if (!session) {
+  //   return NextResponse.redirect(new URL("/signInAdmin", request.url));
+  // }
 
   /**
    * check admin role

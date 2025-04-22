@@ -132,7 +132,7 @@ export default class TopPlayerScene extends Phaser.Scene {
     this.containerTopPlayer.setVisible(false);
   }
 
-  private API_TopPlayer = async () => {
+  public API_TopPlayer = async () => {
     try {
       const response = await fetch("/api/topPlayer", {
         method: "GET",
@@ -156,7 +156,7 @@ export default class TopPlayerScene extends Phaser.Scene {
           rank: player.rank,
           playerName: player.username || "",
           score: player.score,
-          avatarUrl: player.avatar_url || "asset/default_avatar.jpg",
+          avatarUrl: player.avatar_url || "default_avatar.jpg",
         }));
       }
 
@@ -169,11 +169,23 @@ export default class TopPlayerScene extends Phaser.Scene {
           score: currentPlayer.score,
           avatarUrl: currentPlayer.avatar_url || "asset/default_avatar.jpg",
         };
+      } else {
+        // Tạo dữ liệu mặc định nếu không có thông tin người chơi hiện tại
+        this.apiCurrentPlayer = {
+          rank: 0,
+          playerName: "You",
+          score: 0,
+          avatarUrl: "asset/default_avatar.jpg",
+        };
+      }
 
-        // Hiển thị thông tin người chơi hiện tại
-        if (this.containerTopPlayer && this.containerTopPlayer.visible) {
-          this.displayPlayer(this.apiCurrentPlayer, true);
-        }
+      // Hiển thị thông tin người chơi hiện tại nếu UI đang hiển thị
+      if (
+        this.containerTopPlayer &&
+        this.containerTopPlayer.visible &&
+        this.apiCurrentPlayer
+      ) {
+        this.displayPlayer(this.apiCurrentPlayer, true);
       }
 
       // Hiển thị danh sách top players nếu có dữ liệu
