@@ -174,7 +174,7 @@ export default class TopPlayerScene extends Phaser.Scene {
           rank: currentPlayer.rank,
           playerName: currentPlayer.username || "",
           score: currentPlayer.score,
-          avatarUrl: currentPlayer.avatar_url || "asset/default_avatar.jpg",
+          avatarUrl: currentPlayer.avatar_url || "default_avatar.jpg",
         };
       } else {
         // Tạo dữ liệu mặc định nếu không có thông tin người chơi hiện tại

@@ -158,9 +158,7 @@ export default class GamePlayScene extends Phaser.Scene {
       method: "POST",
       body: JSON.stringify({ score: this.score }),
     });
-
     const data = await response.json();
-    console.log(data);
   }
 
   private setupInput() {
@@ -358,7 +356,9 @@ export default class GamePlayScene extends Phaser.Scene {
       const topPlayerScene = this.scene.get("TopPlayerScene") as any;
       // Đặt cờ để thông báo cần làm mới dữ liệu
       topPlayerScene.needRefresh = true;
-      topPlayerScene.API_TopPlayer();
+      setTimeout(() => {
+        topPlayerScene.API_TopPlayer();
+      }, 1000);
     }
   }
 
