@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
 import createSupabaseServerClient from "@/lib/supabase/server";
 import createSupabaseAdminAuthClient from "@/lib/supabase/admin";
-import { v4 as uuidv4 } from "uuid";
+import { User } from "@supabase/supabase-js";
 /**
  * Because the trigger is not used, this should be used instead
  */
-const makeProfileForUser = async (id: string) => {
+const makeProfileForGoogleUser = async (user: User) => {
   const supbabse = await createSupabaseAdminAuthClient();
   const { data, error } = await supbabse.from("profiles").upsert({
-    id: id,
-    username: uuidv4(),
+    id: user.id,
+    username: user.user_metadata.name,
   });
-  console.log("user profile", data, error);
 };
 
 export async function GET(request: Request) {
@@ -26,7 +25,8 @@ export async function GET(request: Request) {
     } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error && user) {
-      await makeProfileForUser(user.id);
+      await makeProfileForGoogleUser(user);
+      console.log("USER GOOGLE", user.user_metadata.full_name);
       return NextResponse.redirect(`${origin}${next}`);
     }
   }
