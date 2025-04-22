@@ -6,6 +6,7 @@ const publicPaths = [
   "/Game",
   "/signInAdmin",
   "/api/*",
+  "/asset/*",
   "/_next/static/*",
   "/favicon.ico",
 ];
