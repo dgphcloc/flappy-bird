@@ -2,6 +2,7 @@
 import LoginScene from "./LoginScene";
 import getUserSession from "@/lib/supabase/getUserSession";
 import TopPlayerScene from "./TopPlayerScene";
+import SettingScene from "./SettingScene";
 export default class MenuLoginScene extends Phaser.Scene {
   // Game objects
   private birdMainBG!: Phaser.GameObjects.Sprite;
@@ -93,6 +94,9 @@ export default class MenuLoginScene extends Phaser.Scene {
     }
     if (!this.scene.isActive("TopPlayerScene")) {
       this.scene.launch("TopPlayerScene");
+    }
+    if (!this.scene.isActive("SettingScene")) {
+      this.scene.launch("SettingScene");
     }
   }
 
@@ -227,7 +231,10 @@ export default class MenuLoginScene extends Phaser.Scene {
 
       case "settings":
         // Xử lý khi click nút settings
-        console.log("Open settings");
+        const settingScene = this.scene.get("SettingScene") as SettingScene;
+        settingScene.showSettingContainer();
+        this.ContainerMenu.setVisible(false);
+        this.birdImageContainer.setVisible(false);
         break;
 
       default:

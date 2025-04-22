@@ -161,7 +161,6 @@ export default class RegisterScene extends Phaser.Scene {
   private createInputFields() {
     const frameWidth = this.backgroundFrame.displayWidth;
     const frameHeight = this.backgroundFrame.displayHeight;
-    console.log(frameWidth, frameHeight);
 
     // Tạo style chung cho input
     const widthInput = frameWidth * 0.7;
