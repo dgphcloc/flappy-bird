@@ -9,6 +9,7 @@ import LoginScene from "./scenes/LoginScene";
 import RegisterScene from "./scenes/RegisterScene";
 import GamePlayScene from "./scenes/GamePlayScene";
 import TopPlayerScene from "./scenes/TopPlayerScene";
+import SettingScene from "./scenes/SettingScene";
 const Game = () => {
   const gameRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +33,7 @@ const Game = () => {
         RegisterScene,
         GamePlayScene,
         TopPlayerScene,
+        SettingScene,
       ],
       scale: {
         mode: Phaser.Scale.FIT,
