@@ -1,7 +1,7 @@
 import { LineChart } from "@mantine/charts";
 import { useEffect, useState } from "react";
 import { Box, Select, Text } from "@mantine/core";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import { format, startOfMonth, endOfMonth, addMonths } from "date-fns";
 type SigUnpStaticData = {
   day: string;
   total: number;
@@ -30,7 +30,7 @@ export default function UserSignupStatisticsComponent() {
     const now = new Date();
     const year = now.getFullYear();
     const start = startOfMonth(new Date(year, month - 1, 1));
-    const end = endOfMonth(start);
+    const end = startOfMonth(addMonths(start, 1));
 
     try {
       const res = await fetch(
