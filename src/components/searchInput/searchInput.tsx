@@ -8,7 +8,11 @@ import { useDebouncedCallback } from "@mantine/hooks";
 import { fetchUsersByPage } from "@/app/admin/_action";
 import { UserRecord } from "@/type/type";
 
-export default function SearchInput() {
+export default function SearchInput({
+  onEnter,
+}: {
+  onEnter?: (keyword: string) => void;
+}) {
   const selectRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -18,10 +22,11 @@ export default function SearchInput() {
   const handleSearch = useDebouncedCallback(async (query: string) => {
     console.log(query);
     setLoading(true);
-    if (!query) {
-      setLoading(false);
-      return;
-    }
+    // if (!query) {
+    //   setLoading(false);
+    //   return;
+    // }
+    setSearchKeyword(query);
     const result = await fetchUsersByPage(1, 15, query);
     if (result && result.data) {
       console.log("data:", result.data);
@@ -30,23 +35,36 @@ export default function SearchInput() {
 
     setLoading(false);
   }, 500);
+
+  /**
+   *
+   * When pressing Enter with a blank space, it keeps the old keyword because the state above doesn't get updated.
+   */
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      console.log("SEARCH", searchKeyword);
+      onEnter?.(searchKeyword);
+    }
+  };
   return (
     <Select
       value={searchKeyword}
       placeholder="Search..."
       searchable
+      ref={selectRef}
       onSearchChange={handleSearch}
       data={data?.map((user) => ({
         value: user.id,
         label: user.username,
       }))}
-      ref={selectRef}
       rightSection={loading && <Loader size={20} />}
       onChange={(value) => {
         console.log("Selected username:", value);
         router.push(`/admin/users/${value}`);
         setSearchKeyword(value || "");
       }}
+      onKeyDown={handleKeyDown}
     />
   );
 }

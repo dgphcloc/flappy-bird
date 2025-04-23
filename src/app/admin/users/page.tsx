@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Box, Button, Center, Flex } from "@mantine/core";
+import { useEffect, useState } from "react";
+import { Box, Button, Center, Flex, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Modal } from "@mantine/core";
 import TableMantine, { TableDataRequired } from "@/components/table/table";
@@ -19,7 +19,7 @@ export default function UserFeatPage() {
   const [perPage, setPerPage] = useState<number>(20);
   const [opened, { open, close }] = useDisclosure(false);
   const [searchKeyword, setSearchKeyword] = useState<string>("");
-  const { userRecords, totalItems, isLoading, error } = useUserData({
+  const { userRecords, totalItems, isLoading } = useUserData({
     searchKeyword,
     currentPage,
     perPage,
@@ -59,7 +59,12 @@ export default function UserFeatPage() {
         <CreateUserForm onClose={close} />
       </Modal>
       <Box p={32}>
-        <SearchInput />
+        <SearchInput
+          onEnter={(searchKeyword) => {
+            setSearchKeyword(searchKeyword);
+          }}
+        />
+        {searchKeyword ? <Text>keyword:{searchKeyword}</Text> : null}
         <Flex justify="flex-end" py={8}>
           <Button variant="filled" color="cyan" onClick={open}>
             <HiPlus />
