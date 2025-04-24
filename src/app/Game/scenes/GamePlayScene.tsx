@@ -519,7 +519,6 @@ export default class GamePlayScene extends Phaser.Scene {
 
     // Kích thước cơ bản cho mỗi chữ số
     const baseDigitWidth = 75;
-    const baseDigitHeight = 95;
 
     // Tính toán kích thước scoreBg
     const scoreWidth = this.scoreBg.displayWidth;
