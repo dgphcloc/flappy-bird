@@ -1,8 +1,9 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function AuthCodeErrorPage() {
+function AuthCodeErrorContent() {
   const searchParams = useSearchParams();
   const message =
     searchParams.get("message") || "An unknown error has occurred.";
@@ -19,5 +20,19 @@ export default function AuthCodeErrorPage() {
         Go back to login page
       </a>
     </div>
+  );
+}
+
+export default function AuthCodeErrorPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <AuthCodeErrorContent />
+    </Suspense>
   );
 }
