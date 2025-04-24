@@ -26,7 +26,15 @@ export async function POST(request: Request) {
 
       return NextResponse.json(parsedResult, { status: 201 });
     } catch {
-      return "lỗi chưa đăng ký được";
+      return NextResponse.json(
+        {
+          error: {
+            message: "Lỗi chưa đăng ký được",
+            code: ErrorCodes.REGISTRATION_FAILED,
+          },
+        },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error("Error in register route:", error);

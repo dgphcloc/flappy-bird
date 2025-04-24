@@ -8,6 +8,30 @@ interface PlayerData {
   avatarUrl: string;
 }
 
+// Định nghĩa interface cho dữ liệu API
+interface ApiPlayerData {
+  id?: string;
+  username: string | null;
+  score: number;
+  rank: number;
+  profile_id?: string;
+  avatar_url: string | null;
+  updated_at?: string;
+}
+
+interface TopPlayersResponse {
+  count: number;
+  data: ApiPlayerData[];
+}
+
+interface ApiResponse {
+  topPlayers: TopPlayersResponse;
+  me: ApiPlayerData[];
+  error?: {
+    message: string;
+  };
+}
+
 export default class TopPlayerScene extends Phaser.Scene {
   // Background và container
   private bg_topPlayer!: Phaser.GameObjects.Image;
@@ -32,6 +56,12 @@ export default class TopPlayerScene extends Phaser.Scene {
   private scoreTopPlayer!: Phaser.GameObjects.Sprite;
   private digitSprites: Phaser.GameObjects.Sprite[] = [];
   private nameText!: Phaser.GameObjects.Text;
+  private isLoadingApi: boolean = false;
+  private needRefresh: boolean = false;
+
+  // Dữ liệu từ API
+  private apiTopPlayers: PlayerData[] = [];
+  private apiCurrentPlayer: PlayerData | null = null;
 
   // Dữ liệu test
   private testPlayerData1: PlayerData[] = [
@@ -99,9 +129,95 @@ export default class TopPlayerScene extends Phaser.Scene {
 
   // Khởi tạo scene
   create() {
+    this.API_TopPlayer();
     this.createContainerTopPlayer();
     this.containerTopPlayer.setVisible(false);
   }
+
+  public API_TopPlayer = async () => {
+    try {
+      if (this.isLoadingApi) return;
+
+      // Đánh dấu đang tải dữ liệu
+      this.isLoadingApi = true;
+
+      const response = await fetch("/api/topPlayer", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = (await response.json()) as ApiResponse;
+
+      console.log("Top Player API response:", data);
+
+      if (data.error) {
+        console.log("API error:", data.error.message);
+        return;
+      }
+
+      // Xử lý dữ liệu top players
+      if (data.topPlayers.data && Array.isArray(data.topPlayers.data)) {
+        this.apiTopPlayers = data.topPlayers.data.map((player) => ({
+          rank: player.rank,
+          playerName: player.username || "",
+          score: player.score,
+          avatarUrl: player.avatar_url || "default_avatar.jpg",
+        }));
+      }
+
+      // Xử lý dữ liệu người chơi hiện tại
+      if (data.me && data.me.length > 0) {
+        const currentPlayer = data.me[0];
+        this.apiCurrentPlayer = {
+          rank: currentPlayer.rank,
+          playerName: currentPlayer.username || "",
+          score: currentPlayer.score,
+          avatarUrl: currentPlayer.avatar_url || "default_avatar.jpg",
+        };
+      } else {
+        // Tạo dữ liệu mặc định nếu không có thông tin người chơi hiện tại
+        this.apiCurrentPlayer = {
+          rank: 0,
+          playerName: "You",
+          score: 0,
+          avatarUrl: "asset/default_avatar.jpg",
+        };
+      }
+
+      // Hiển thị thông tin người chơi hiện tại nếu UI đang hiển thị
+      if (
+        this.containerTopPlayer &&
+        (this.containerTopPlayer.visible || this.needRefresh)
+      ) {
+        // Xóa các hiển thị cũ
+        this.clearAllPlayerDisplays();
+
+        // Hiển thị danh sách người chơi top
+        if (this.apiTopPlayers.length > 0) {
+          this.displayAllPlayers(this.apiTopPlayers);
+        } else {
+          // Nếu không có dữ liệu, dùng dữ liệu test
+          this.displayAllPlayers(this.testPlayerData);
+        }
+
+        // Hiển thị người chơi hiện tại (với tham số true để có hiệu ứng đặc biệt)
+        if (this.apiCurrentPlayer) {
+          this.displayPlayer(this.apiCurrentPlayer, true);
+        }
+
+        // Reset cờ làm mới - đã hoàn thành việc cập nhật
+        this.needRefresh = false;
+      }
+    } catch (error) {
+      // Xử lý lỗi
+      console.error("API error:", error);
+    } finally {
+      // Đảm bảo luôn đánh dấu đã tải xong, dù có lỗi hay không
+      this.isLoadingApi = false;
+    }
+  };
 
   // Tạo container chính chứa tất cả thành phần
   private createContainerTopPlayer() {
@@ -116,11 +232,17 @@ export default class TopPlayerScene extends Phaser.Scene {
     // Thêm background và nút vào container
     this.containerTopPlayer.add([this.bg_topPlayer, this.btn_back]);
 
-    // Hiển thị danh sách người chơi top
-    this.displayAllPlayers(this.testPlayerData);
-
-    // Hiển thị người chơi đặc biệt
-    this.displayPlayer(this.testPlayerData1[0]);
+    // Hiển thị dữ liệu từ API nếu có, nếu không thì hiển thị dữ liệu test
+    if (this.apiTopPlayers.length > 0) {
+      this.displayAllPlayers(this.apiTopPlayers);
+      if (this.apiCurrentPlayer) {
+        this.displayPlayer(this.apiCurrentPlayer, true);
+      }
+    } else {
+      // Hiển thị dữ liệu test khi chưa có dữ liệu API
+      this.displayAllPlayers(this.testPlayerData);
+      this.displayPlayer(this.testPlayerData1[0]);
+    }
 
     // Thiết lập scale và độ sâu cho container
     const baseWidth = this.bg_topPlayer.width;
@@ -136,6 +258,14 @@ export default class TopPlayerScene extends Phaser.Scene {
   public showContainerTopPlayer() {
     if (!this.containerTopPlayer) {
       this.createContainerTopPlayer();
+    } else {
+      // Cập nhật dữ liệu mới nhất khi hiển thị lại
+      if (this.apiTopPlayers.length > 0) {
+        this.displayAllPlayers(this.apiTopPlayers);
+        if (this.apiCurrentPlayer) {
+          this.displayPlayer(this.apiCurrentPlayer, true);
+        }
+      }
     }
     this.containerTopPlayer.setVisible(true);
   }
@@ -216,10 +346,6 @@ export default class TopPlayerScene extends Phaser.Scene {
     inputBg.setScale(1.1);
     inputBg.setDepth(1080);
 
-    if (isCurrentUser) {
-      inputBg.setTint(0x8adfea); // Màu xanh nhạt cho người dùng hiện tại
-    }
-
     this.playerInputBgs.push(inputBg);
 
     // Hiển thị xếp hạng - tạo sprite riêng cho mỗi chữ số
@@ -239,8 +365,16 @@ export default class TopPlayerScene extends Phaser.Scene {
       this.icon_infinity.setScale(1);
       this.icon_infinity.setDepth(1080);
 
-      // Thêm vào container sau
-      rankSprites.push(this.icon_infinity as any);
+      // Tạo một sprite ẩn để thêm vào rankSprites
+      const infinitySprite = this.add.sprite(
+        -inputBg.displayWidth / 2.4,
+        adjustedY,
+        "spr_numberTopPlayer",
+        0
+      );
+      infinitySprite.setVisible(false);
+      infinitySprite.setDepth(1080);
+      rankSprites.push(infinitySprite);
 
       // Giữ tham chiếu cho spr_numberTopPlayer để tránh lỗi
       const hiddenRankSprite = this.add.sprite(
@@ -512,7 +646,7 @@ export default class TopPlayerScene extends Phaser.Scene {
     const playerDigits: Phaser.GameObjects.Sprite[] = [];
 
     // Hiển thị tối đa 3 chữ số
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < scoreString.length; i++) {
       let digit = 0;
       if (i < scoreString.length) {
         digit = parseInt(scoreString[i]);

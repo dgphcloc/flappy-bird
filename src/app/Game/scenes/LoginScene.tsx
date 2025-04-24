@@ -3,12 +3,11 @@ import MenuLoginScene from "./MenuLoginScene";
 import RegisterScene from "./RegisterScene";
 import {
   VIETNAMESE_CHARS_REGEX,
-  VIETNAMESE_AND_SPACE_REGEX,
   ALLOWED_CHARS_REGEX,
 } from "../constants/regexPatterns";
 import { createInputHandlers } from "../constants/inputUtils";
-import { ErrorCodes, ErrorMessages } from "@/app/shared/errorMessages";
 import { createBrowserClient } from "@supabase/ssr";
+import { ErrorCodes, ErrorMessages } from "@/app/shared/errorMessages";
 
 export default class LoginScene extends Phaser.Scene {
   private backgroundFrame!: Phaser.GameObjects.Image;
@@ -197,10 +196,13 @@ export default class LoginScene extends Phaser.Scene {
       );
 
       const loginWithGoogle = async () => {
+        // Use the NEXT_PUBLIC_SITE_URL env variable if available, otherwise fallback to location.origin
+        const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || location.origin;
+
         await supabase.auth.signInWithOAuth({
           provider: "google",
           options: {
-            redirectTo: `${location.origin}/api/auth/callback`,
+            redirectTo: `${redirectUrl}/api/auth/callback`,
           },
         });
       };
@@ -233,10 +235,13 @@ export default class LoginScene extends Phaser.Scene {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
       const loginWithFacebook = async () => {
+        // Use the NEXT_PUBLIC_SITE_URL env variable if available, otherwise fallback to location.origin
+        const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || location.origin;
+
         await supabase.auth.signInWithOAuth({
           provider: "facebook",
           options: {
-            redirectTo: `${location.origin}/api/auth/callback`,
+            redirectTo: `${redirectUrl}/api/auth/callback`,
           },
         });
       };
@@ -489,6 +494,14 @@ export default class LoginScene extends Phaser.Scene {
 
   private handleLogin = async () => {
     try {
+      if (!this.usernameText || !this.passwordText) {
+        this.showError(ErrorMessages[ErrorCodes.EMPTY_FIELDS]);
+        return;
+      }
+
+      this.showLoading();
+      this.disableLoginButton(2);
+
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
@@ -500,11 +513,20 @@ export default class LoginScene extends Phaser.Scene {
         }),
       });
 
+      this.hideLoading();
+
       const data = await response.json();
       console.log("Login response:", data);
 
       if (data.error) {
-        this.showError(data.error.message);
+        // Use predefined error message if available, otherwise use the server's message
+        const errorCode = data.error.code as keyof typeof ErrorMessages;
+        const errorMessage =
+          errorCode && ErrorMessages[errorCode]
+            ? ErrorMessages[errorCode]
+            : data.error.message || ErrorMessages[ErrorCodes.SERVER_ERROR];
+
+        this.showError(errorMessage);
         return;
       }
 
@@ -518,11 +540,28 @@ export default class LoginScene extends Phaser.Scene {
       this.LoginContainer.setVisible(false);
       this.toggleInputsAndIcons(false);
       menuLoginScene.showMenu();
+      this.refreshTopPlayer();
     } catch (error) {
+      this.hideLoading();
       console.error("Login error:", error);
-      this.showError("Lỗi đăng nhập. Vui lòng thử lại.");
+      this.showError(ErrorMessages[ErrorCodes.NETWORK_ERROR]);
     }
   };
+  private refreshTopPlayer() {
+    if (this.scene.get("TopPlayerScene")) {
+      const topPlayerScene = this.scene.get(
+        "TopPlayerScene"
+      ) as Phaser.Scene & {
+        needRefresh: boolean;
+        API_TopPlayer: () => void;
+      };
+      // Đặt cờ để thông báo cần làm mới dữ liệu
+      topPlayerScene.needRefresh = true;
+      setTimeout(() => {
+        topPlayerScene.API_TopPlayer();
+      }, 1000);
+    }
+  }
 
   private createButtonX() {
     this.spr_btn_x = this.physics.add.sprite(0, 0, "spr_btn_x", 0);
@@ -609,7 +648,7 @@ export default class LoginScene extends Phaser.Scene {
       this.loadingText.destroy();
     }
 
-    this.loadingText = this.add.text(0, 0, "Đang đăng nhập...", {
+    this.loadingText = this.add.text(0, 0, "Đang đăng nhập..", {
       fontFamily: "Kavoon",
       fontSize: "20px",
       color: "#FFFFFF",

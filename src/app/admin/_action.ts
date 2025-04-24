@@ -57,6 +57,7 @@ export async function fetchPaginatedRecords<T>({
       total: count ?? 0,
     };
   } catch (error) {
+    console.error("Failed to fetch paginated records:", error);
     return null;
   }
 }

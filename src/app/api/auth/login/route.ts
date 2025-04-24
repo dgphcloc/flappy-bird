@@ -74,13 +74,15 @@ export async function POST(request: Request) {
       );
     }
   } catch (error) {
+    if (error) {
+      return NextResponse.json(
+        {
+          error: ErrorCodes.SERVER_ERROR,
+          message: ErrorMessages[ErrorCodes.SERVER_ERROR],
+        },
+        { status: 400 }
+      );
+    }
     // Xử lý lỗi parse JSON
-    return NextResponse.json(
-      {
-        error: ErrorCodes.SERVER_ERROR,
-        message: ErrorMessages[ErrorCodes.SERVER_ERROR],
-      },
-      { status: 400 }
-    );
   }
 }
