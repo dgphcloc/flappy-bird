@@ -1,5 +1,4 @@
 "use client";
-import TopPlayerScene from "./TopPlayerScene";
 import AudioManager from "@/lib/audio/AudioManager";
 export default class GamePlayScene extends Phaser.Scene {
   // Các hằng số
@@ -99,7 +98,12 @@ export default class GamePlayScene extends Phaser.Scene {
     this.physics.world.setBounds(0, 0, this.scale.width, this.scale.height);
 
     // Ẩn ground từ BackgroundScene
-    const backgroundScene = this.scene.get("BackgroundScene") as any;
+    const backgroundScene = this.scene.get(
+      "BackgroundScene"
+    ) as Phaser.Scene & {
+      hideGround: () => void;
+      showGround: () => void;
+    };
     if (backgroundScene && backgroundScene.hideGround) {
       backgroundScene.hideGround();
     }
@@ -155,11 +159,10 @@ export default class GamePlayScene extends Phaser.Scene {
   }
 
   private async updateScore() {
-    const response = await fetch("/api/updateScore", {
+    await fetch("/api/updateScore", {
       method: "POST",
       body: JSON.stringify({ score: this.score }),
     });
-    const data = await response.json();
   }
 
   private setupInput() {
@@ -289,10 +292,9 @@ export default class GamePlayScene extends Phaser.Scene {
       this.bestScoredata = this.score;
     } else {
       this.bestScore();
-      let fakebestScore = this.bestScoredata;
     }
     console.log(this.bestScoredata);
-    let fakebestScoreString = this.bestScoredata.toString();
+    const fakebestScoreString = this.bestScoredata.toString();
 
     this.bestScoreSprites.forEach((sprite) => sprite.destroy());
     this.bestScoreSprites = [];
@@ -354,7 +356,12 @@ export default class GamePlayScene extends Phaser.Scene {
   }
   private refreshTopPlayer() {
     if (this.scene.get("TopPlayerScene")) {
-      const topPlayerScene = this.scene.get("TopPlayerScene") as any;
+      const topPlayerScene = this.scene.get(
+        "TopPlayerScene"
+      ) as Phaser.Scene & {
+        needRefresh: boolean;
+        API_TopPlayer: () => void;
+      };
       // Đặt cờ để thông báo cần làm mới dữ liệu
       topPlayerScene.needRefresh = true;
       setTimeout(() => {
@@ -474,10 +481,18 @@ export default class GamePlayScene extends Phaser.Scene {
     this.sprBtnHome.on("pointerdown", () => {
       this.sprBtnHome.setFrame(2);
       this.scene.stop("GamePlayScene");
-      const menuLoginScene = this.scene.get("MenuLoginScene") as any;
+      const menuLoginScene = this.scene.get(
+        "MenuLoginScene"
+      ) as Phaser.Scene & {
+        returnMenu: () => void;
+      };
       this.resetEvent();
       menuLoginScene.returnMenu();
-      const backgroundScene = this.scene.get("BackgroundScene") as any;
+      const backgroundScene = this.scene.get(
+        "BackgroundScene"
+      ) as Phaser.Scene & {
+        showGround: () => void;
+      };
       backgroundScene.showGround();
     });
     this.sprBtnHome.on("pointerover", () => {
@@ -508,7 +523,6 @@ export default class GamePlayScene extends Phaser.Scene {
 
     // Tính toán kích thước scoreBg
     const scoreWidth = this.scoreBg.displayWidth;
-    const scoreHeight = this.scoreBg.displayHeight;
 
     // Điều chỉnh scale dựa trên số lượng chữ số
     let digitScale = 1;
@@ -526,7 +540,6 @@ export default class GamePlayScene extends Phaser.Scene {
 
     // Tính lại kích thước chữ số sau khi scale
     const digitWidth = baseDigitWidth * digitScale;
-    const digitHeight = baseDigitHeight * digitScale;
 
     // Tính tổng chiều rộng của tất cả chữ số
     const totalWidth = digitWidth * totalDigits;
@@ -749,7 +762,11 @@ export default class GamePlayScene extends Phaser.Scene {
     } else {
       this.DeactiveScene();
       // Hiển thị ground trong BackgroundScene khi deactive
-      const backgroundScene = this.scene.get("BackgroundScene") as any;
+      const backgroundScene = this.scene.get(
+        "BackgroundScene"
+      ) as Phaser.Scene & {
+        showGround: () => void;
+      };
       if (backgroundScene && backgroundScene.showGround) {
         backgroundScene.showGround();
       }

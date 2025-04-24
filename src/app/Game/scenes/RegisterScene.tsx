@@ -2,14 +2,11 @@
 import MenuLoginScene from "./MenuLoginScene";
 import {
   VIETNAMESE_CHARS_REGEX,
-  VIETNAMESE_AND_SPACE_REGEX,
   ALLOWED_CHARS_REGEX,
 } from "../constants/regexPatterns";
 import { createInputHandlers } from "../constants/inputUtils";
 import LoginScene from "./LoginScene";
 import { ErrorCodes, ErrorMessages } from "@/app/shared/errorMessages";
-import { signUpWithUsernameAndPassword } from "@/app/shared/_action";
-import { Body } from "matter";
 
 export default class RegisterScene extends Phaser.Scene {
   private RegisterContainer!: Phaser.GameObjects.Container;
@@ -490,8 +487,10 @@ export default class RegisterScene extends Phaser.Scene {
         });
       }
     } catch (error) {
-      this.hideLoading();
-      this.showError(ErrorMessages[ErrorCodes.NETWORK_ERROR]);
+      if (error) {
+        this.hideLoading();
+        this.showError(ErrorMessages[ErrorCodes.NETWORK_ERROR]);
+      }
     }
   }
 

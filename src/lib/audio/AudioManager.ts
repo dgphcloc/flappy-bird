@@ -107,6 +107,7 @@ class AudioManager {
   public setSoundVolume(volume: number): void {
     this.soundVolume = Math.max(0, Math.min(1, volume));
     this.sounds.forEach((sound) => {
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       (sound as any).volume = this.soundVolume;
     });
   }
@@ -114,6 +115,7 @@ class AudioManager {
   public setMusicVolume(volume: number): void {
     this.musicVolume = Math.max(0, Math.min(1, volume));
     this.music.forEach((music) => {
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       (music as any).volume = this.musicVolume;
     });
   }

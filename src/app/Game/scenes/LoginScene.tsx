@@ -3,11 +3,9 @@ import MenuLoginScene from "./MenuLoginScene";
 import RegisterScene from "./RegisterScene";
 import {
   VIETNAMESE_CHARS_REGEX,
-  VIETNAMESE_AND_SPACE_REGEX,
   ALLOWED_CHARS_REGEX,
 } from "../constants/regexPatterns";
 import { createInputHandlers } from "../constants/inputUtils";
-import { ErrorCodes, ErrorMessages } from "@/app/shared/errorMessages";
 import { createBrowserClient } from "@supabase/ssr";
 
 export default class LoginScene extends Phaser.Scene {
@@ -526,7 +524,12 @@ export default class LoginScene extends Phaser.Scene {
   };
   private refreshTopPlayer() {
     if (this.scene.get("TopPlayerScene")) {
-      const topPlayerScene = this.scene.get("TopPlayerScene") as any;
+      const topPlayerScene = this.scene.get(
+        "TopPlayerScene"
+      ) as Phaser.Scene & {
+        needRefresh: boolean;
+        API_TopPlayer: () => void;
+      };
       // Đặt cờ để thông báo cần làm mới dữ liệu
       topPlayerScene.needRefresh = true;
       setTimeout(() => {

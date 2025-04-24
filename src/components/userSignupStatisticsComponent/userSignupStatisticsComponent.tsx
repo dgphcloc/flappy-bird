@@ -1,7 +1,7 @@
 import { LineChart } from "@mantine/charts";
 import { useEffect, useState } from "react";
 import { Box, Select, Text } from "@mantine/core";
-import { format, startOfMonth, endOfMonth, addMonths } from "date-fns";
+import { format, startOfMonth, addMonths } from "date-fns";
 type SigUnpStaticData = {
   day: string;
   total: number;

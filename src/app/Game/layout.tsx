@@ -1,7 +1,6 @@
 import { Providers } from "@/components/providers";
 import "../styles/global.css";
 import { MantineProvider } from "@mantine/core";
-import Head from "next/head";
 import { Kavoon } from "next/font/google";
 
 const kavoon = Kavoon({ weight: "400", subsets: ["latin"] });

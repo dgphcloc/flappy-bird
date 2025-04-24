@@ -23,7 +23,6 @@ export default function CreateUserForm({ onClose }: { onClose: () => void }) {
       const supabase = await createSupabaseAdminAuthClient();
       const {
         data: { user },
-        error,
       } = await supabase.auth.admin.createUser({
         email: generateUserEmailTemp(),
         password: value.password,

@@ -1,7 +1,5 @@
 "use client";
 
-import { assert } from "console";
-
 export default class PreLoadScene extends Phaser.Scene {
   constructor() {
     super("PreLoadScene");

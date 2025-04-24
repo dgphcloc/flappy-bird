@@ -306,8 +306,8 @@ export default class SettingScene extends Phaser.Scene {
   private async createName() {
     const Name = await this.getScore();
     const trimmedName = Name.name.trim();
-    let score = Name.score.toString();
-    let avatar = Name.url;
+    const score = Name.score.toString();
+    const avatar = Name.url;
 
     const maxLength = 13;
     let displayName = trimmedName;

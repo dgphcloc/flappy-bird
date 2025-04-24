@@ -7,7 +7,7 @@ import { User } from "@supabase/supabase-js";
  */
 const makeProfileForGoogleUser = async (user: User) => {
   const supbabse = await createSupabaseAdminAuthClient();
-  const { data, error } = await supbabse.from("profiles").upsert({
+  await supbabse.from("profiles").upsert({
     id: user.id,
     username: user.user_metadata.name,
   });
