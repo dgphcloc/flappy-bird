@@ -1,11 +1,12 @@
 "use client";
-import { NavLink, Box, Title } from "@mantine/core";
+import { NavLink, Box, Title, Button } from "@mantine/core";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
-import { MdDashboard, MdPeople } from "react-icons/md";
-// import { CiUser, CiViewList } from "react-icons/ci";
+import { MdDashboard, MdPeople, MdLogout } from "react-icons/md";
+import { useRouter } from "next/navigation";
 import classes from "./navigation.module.css";
 import { PATH_ADMIN } from "@/routes";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const mockdata = [
   {
@@ -15,18 +16,16 @@ const mockdata = [
       { label: "users", icon: MdPeople, link: PATH_ADMIN.users },
     ],
   },
-  // {
-  //   title: 'App',
-  //   links: [
-  //     { label: 'profile', icon: CiUser, link: PATH_ADMIN.profile },
-  //     { label: 'logs', icon: CiViewList, link: PATH_ADMIN.log },
-  //   ],
-  // },
 ];
 
 export default function Navigation() {
   const pathName = usePathname();
-
+  const router = useRouter();
+  const handleLogout = () => {
+    const supabase = getSupabaseBrowserClient();
+    supabase.auth.signOut();
+    router.push("/signInAdmin");
+  };
   return (
     <Fragment>
       {mockdata.map((section) => (
@@ -58,6 +57,15 @@ export default function Navigation() {
           })}
         </Box>
       ))}
+      <Box mt="lg" pl="md">
+        <Button
+          leftSection={<MdLogout />}
+          variant="light"
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
+      </Box>
     </Fragment>
   );
 }
