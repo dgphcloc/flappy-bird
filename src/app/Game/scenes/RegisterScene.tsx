@@ -398,39 +398,33 @@ export default class RegisterScene extends Phaser.Scene {
 
   private async handleRegister() {
     try {
-      // Trim whitespace from all fields
-      // const username = this.usernameText.trim();
-      // const password = this.passwordText.trim();
-      // const passwordConfirm = this.passwordComfirmText.trim();
+      const username = this.usernameText.trim();
+      const password = this.passwordText.trim();
+      const passwordConfirm = this.passwordComfirmText.trim();
 
-      // if (!username || !password || !passwordConfirm) {
-      //   this.showError(ErrorMessages[ErrorCodes.EMPTY_FIELDS]);
-      //   return;
-      // }
+      if (!username || !password || !passwordConfirm) {
+        this.showError(ErrorMessages[ErrorCodes.EMPTY_FIELDS]);
+        return;
+      }
 
-      // // Kiểm tra mật khẩu xác nhận
-      // if (password !== passwordConfirm) {
-      //   console.log("Debug password comparison:");
-      //   console.log("Password:", password);
-      //   console.log("Password Confirm:", passwordConfirm);
-      //   console.log("Length password:", password.length);
-      //   console.log("Length password confirm:", passwordConfirm.length);
-      //   this.showError(ErrorMessages[ErrorCodes.PASSWORD_NOT_MATCH]);
-      //   return;
-      // }
+      // Kiểm tra mật khẩu xác nhận
+      if (password !== passwordConfirm) {
+        this.showError(ErrorMessages[ErrorCodes.PASSWORD_NOT_MATCH]);
+        return;
+      }
 
-      // // Kiểm tra độ dài mật khẩu
-      // if (password.length < 6) {
-      //   this.showError(ErrorMessages[ErrorCodes.PASSWORD_TOO_SHORT]);
-      //   return;
-      // }
+      // Kiểm tra độ dài mật khẩu
+      if (password.length < 6) {
+        this.showError(ErrorMessages[ErrorCodes.PASSWORD_TOO_SHORT]);
+        return;
+      }
 
-      // // Kiểm tra định dạng username
-      // const usernameRegex = /^[a-zA-Z0-9_]+$/;
-      // if (!usernameRegex.test(username)) {
-      //   this.showError(ErrorMessages[ErrorCodes.INVALID_USERNAME]);
-      //   return;
-      // }
+      // Kiểm tra định dạng username
+      const usernameRegex = /^[a-zA-Z0-9_]+$/;
+      if (!usernameRegex.test(username)) {
+        this.showError(ErrorMessages[ErrorCodes.INVALID_USERNAME]);
+        return;
+      }
 
       // Hiển thị loading
       this.showLoading();
