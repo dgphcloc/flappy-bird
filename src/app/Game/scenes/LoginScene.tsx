@@ -518,11 +518,22 @@ export default class LoginScene extends Phaser.Scene {
       this.LoginContainer.setVisible(false);
       this.toggleInputsAndIcons(false);
       menuLoginScene.showMenu();
+      this.refreshTopPlayer();
     } catch (error) {
       console.error("Login error:", error);
       this.showError("Lỗi đăng nhập. Vui lòng thử lại.");
     }
   };
+  private refreshTopPlayer() {
+    if (this.scene.get("TopPlayerScene")) {
+      const topPlayerScene = this.scene.get("TopPlayerScene") as any;
+      // Đặt cờ để thông báo cần làm mới dữ liệu
+      topPlayerScene.needRefresh = true;
+      setTimeout(() => {
+        topPlayerScene.API_TopPlayer();
+      }, 1000);
+    }
+  }
 
   private createButtonX() {
     this.spr_btn_x = this.physics.add.sprite(0, 0, "spr_btn_x", 0);

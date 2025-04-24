@@ -13,7 +13,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={kavoon.className}>
+      <head>
+        <title>Admin</title>
+        <link rel="stylesheet" href="/fonts/fonts.css" />
+      </head>
+      <body>
         <MantineProvider
           theme={{
             components: {

@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     const user = await getCurrentUserProfile();
 
     if (user) {
-      const id = "39174ac8-de5e-473a-a971-a8bf9da9aef8";
+      const id = user.id;
       const filePath = getFilenameFromUrl(user.avatar_url);
 
       if (filePath) {

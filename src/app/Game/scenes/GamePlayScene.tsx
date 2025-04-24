@@ -1,5 +1,6 @@
 "use client";
 import TopPlayerScene from "./TopPlayerScene";
+import AudioManager from "@/lib/audio/AudioManager";
 export default class GamePlayScene extends Phaser.Scene {
   // Các hằng số
   private readonly BIRD_SCALE = 0.8; // Tỉ lệ kích thước của chim so với ảnh gốc
@@ -63,6 +64,7 @@ export default class GamePlayScene extends Phaser.Scene {
   // Vòng đời Scene
   preload() {
     this.load.setPath("asset");
+    this.load.audio("jump", "jumb1.wav");
     this.load.image("scoreBG", "score_bg.png");
     this.load.spritesheet("number_spr", "number_spritesheet.png", {
       frameWidth: 75,
@@ -87,8 +89,11 @@ export default class GamePlayScene extends Phaser.Scene {
   }
 
   create() {
-    // Khởi tạo các scene liên quan
     this.launchRequiredScenes();
+    AudioManager.setScene(this);
+
+    // Set maximum volume for all sound effects
+    AudioManager.setSoundVolume(1.0);
 
     // Thiết lập physics
     this.physics.world.setBounds(0, 0, this.scale.width, this.scale.height);
@@ -107,14 +112,6 @@ export default class GamePlayScene extends Phaser.Scene {
     this.createBird();
     this.createScoreSprites();
     this.setupInput();
-
-    // Bắt đầu tạo ống
-    this.pipeSpawnEvent = this.time.addEvent({
-      delay: this.INITIAL_PIPE_SPAWN_TIME,
-      callback: this.spawnPipes,
-      callbackScope: this,
-      loop: true,
-    });
 
     // Kích hoạt scene
     this.isActive = true;
@@ -150,7 +147,11 @@ export default class GamePlayScene extends Phaser.Scene {
     });
 
     const data = await response.json();
-    this.bestScoredata = data.user[0].score;
+    if (data) {
+      this.bestScoredata = data.user.score;
+    } else {
+      this.bestScoredata = 0;
+    }
   }
 
   private async updateScore() {
@@ -290,7 +291,7 @@ export default class GamePlayScene extends Phaser.Scene {
       this.bestScore();
       let fakebestScore = this.bestScoredata;
     }
-
+    console.log(this.bestScoredata);
     let fakebestScoreString = this.bestScoredata.toString();
 
     this.bestScoreSprites.forEach((sprite) => sprite.destroy());
@@ -426,7 +427,7 @@ export default class GamePlayScene extends Phaser.Scene {
     this.sprBtnReset.setDepth(10001);
     this.sprBtnReset.setScale(1.3);
     this.sprBtnReset.setPosition(
-      -this.gameOverF.displayWidth * 0.2,
+      this.gameOverF.displayWidth * 0.2,
       this.gameOverF.displayHeight * 0.5
     );
 
@@ -466,7 +467,7 @@ export default class GamePlayScene extends Phaser.Scene {
     this.sprBtnHome.setDepth(10001);
     this.sprBtnHome.setScale(1.3);
     this.sprBtnHome.setPosition(
-      this.gameOverF.displayWidth * 0.2,
+      -this.gameOverF.displayWidth * 0.2,
       this.gameOverF.displayHeight * 0.5
     );
     this.sprBtnHome.setInteractive();
@@ -554,6 +555,25 @@ export default class GamePlayScene extends Phaser.Scene {
   // Logic game
   private jump() {
     if (!this.isActive) return;
+
+    // Ensure jump sound plays at maximum volume
+    AudioManager.setSoundVolume(0.2);
+    AudioManager.playSound("jump");
+
+    // Nếu là lần nhảy đầu tiên thì bắt đầu tạo ống
+    if (!this.firstClick) {
+      // Tạo ống đầu tiên ngay lập tức
+      this.spawnPipes();
+
+      // Bắt đầu tạo ống định kỳ
+      this.pipeSpawnEvent = this.time.addEvent({
+        delay: this.INITIAL_PIPE_SPAWN_TIME,
+        callback: this.spawnPipes,
+        callbackScope: this,
+        loop: true,
+      });
+    }
+
     this.firstClick = true;
     this.birdVelocity = this.jumpForce;
   }
