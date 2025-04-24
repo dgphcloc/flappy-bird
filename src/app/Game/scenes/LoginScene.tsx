@@ -648,7 +648,7 @@ export default class LoginScene extends Phaser.Scene {
       this.loadingText.destroy();
     }
 
-    this.loadingText = this.add.text(0, 0, "Đang đăng nhập...", {
+    this.loadingText = this.add.text(0, 0, "Đang đăng nhập..", {
       fontFamily: "Kavoon",
       fontSize: "20px",
       color: "#FFFFFF",
