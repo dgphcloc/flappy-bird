@@ -196,13 +196,14 @@ export default class LoginScene extends Phaser.Scene {
       );
 
       const loginWithGoogle = async () => {
-        // Use the NEXT_PUBLIC_SITE_URL env variable if available, otherwise fallback to location.origin
-        const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || location.origin;
+        // Đảm bảo luôn lấy URL hiện tại chính xác
+        const currentUrl =
+          typeof window !== "undefined" ? window.location.origin : "";
 
         await supabase.auth.signInWithOAuth({
           provider: "google",
           options: {
-            redirectTo: `${redirectUrl}/api/auth/callback`,
+            redirectTo: `${currentUrl}/api/auth/callback`,
           },
         });
       };
@@ -235,13 +236,14 @@ export default class LoginScene extends Phaser.Scene {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
       );
       const loginWithFacebook = async () => {
-        // Use the NEXT_PUBLIC_SITE_URL env variable if available, otherwise fallback to location.origin
-        const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || location.origin;
+        // Đảm bảo luôn lấy URL hiện tại chính xác
+        const currentUrl =
+          typeof window !== "undefined" ? window.location.origin : "";
 
         await supabase.auth.signInWithOAuth({
           provider: "facebook",
           options: {
-            redirectTo: `${redirectUrl}/api/auth/callback`,
+            redirectTo: `${currentUrl}/api/auth/callback`,
           },
         });
       };
