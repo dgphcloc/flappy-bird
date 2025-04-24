@@ -11,18 +11,22 @@ export default function AdminPage() {
   );
 
   const loginWithGoogle = async () => {
+    const currentUrl =
+      typeof window !== "undefined" ? window.location.origin : "";
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${location.origin}/api/auth/callback`,
+        redirectTo: `${currentUrl}/api/auth/callback`,
       },
     });
   };
   const loginWithFacebook = async () => {
+    const currentUrl =
+      typeof window !== "undefined" ? window.location.origin : "";
     await supabase.auth.signInWithOAuth({
       provider: "facebook",
       options: {
-        redirectTo: `${location.origin}/api/auth/callback`,
+        redirectTo: `${currentUrl}/api/auth/callback`,
       },
     });
   };
