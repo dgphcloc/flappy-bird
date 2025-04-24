@@ -47,6 +47,11 @@ export default class MenuLoginScene extends Phaser.Scene {
       // groundScene.showGround();
     }
   }
+  public showBGBird() {
+    if (this.birdImageContainer) {
+      this.birdImageContainer.setVisible(true);
+    }
+  }
 
   public isLoggedInChange(value: boolean) {
     this.isLoggedIn = value;
@@ -212,6 +217,7 @@ export default class MenuLoginScene extends Phaser.Scene {
 
       case "birdSkins":
         // Xử lý khi click nút bird skins
+        alert("tính năng đang phát triển");
         console.log("Open bird skins");
         break;
 
