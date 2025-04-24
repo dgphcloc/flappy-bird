@@ -39,8 +39,16 @@ export const useUserData = ({
 
     const fetchData = async () => {
       try {
+        console.log(
+          "SEARCH KEYWORD DATA THAY DOI, KICH HOAT LAI RE-RENDER",
+          searchKeyword
+        );
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
-        const result = await fetchUsersByPage(currentPage, perPage);
+        const result = await fetchUsersByPage(
+          currentPage,
+          perPage,
+          searchKeyword
+        );
         if (isMounted && result) {
           setState({
             userRecords: result.data,
@@ -49,6 +57,7 @@ export const useUserData = ({
             error: null,
           });
         }
+        console.log("KET QUA CUA RE-RENDER LA", result, state);
       } catch (e) {
         if (isMounted && !controller.signal.aborted) {
           setState((prev) => ({
