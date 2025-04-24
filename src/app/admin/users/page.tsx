@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Box, Button, Center, Flex, Text } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Modal } from "@mantine/core";

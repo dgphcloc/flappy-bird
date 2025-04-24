@@ -365,8 +365,16 @@ export default class TopPlayerScene extends Phaser.Scene {
       this.icon_infinity.setScale(1);
       this.icon_infinity.setDepth(1080);
 
-      // Thêm vào container sau
-      rankSprites.push(this.icon_infinity as any);
+      // Tạo một sprite ẩn để thêm vào rankSprites
+      const infinitySprite = this.add.sprite(
+        -inputBg.displayWidth / 2.4,
+        adjustedY,
+        "spr_numberTopPlayer",
+        0
+      );
+      infinitySprite.setVisible(false);
+      infinitySprite.setDepth(1080);
+      rankSprites.push(infinitySprite);
 
       // Giữ tham chiếu cho spr_numberTopPlayer để tránh lỗi
       const hiddenRankSprite = this.add.sprite(

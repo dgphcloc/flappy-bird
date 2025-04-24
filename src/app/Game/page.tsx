@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 // import "../styles/global.css";
 const GameSSR = dynamic(() => import("@/app/Game/Game"), { ssr: false });
-import { Title, Center, Button, Container, Box } from "@mantine/core";
+import { Container, Box } from "@mantine/core";
 
 export default function HomePage() {
   return (

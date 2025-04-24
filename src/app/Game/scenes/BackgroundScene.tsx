@@ -1,7 +1,5 @@
 "use client";
-
 export default class BackgroundScene extends Phaser.Scene {
-  rope: any;
   private bg1!: Phaser.GameObjects.TileSprite;
   private bg2!: Phaser.GameObjects.TileSprite;
   private ground1!: Phaser.GameObjects.TileSprite;

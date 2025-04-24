@@ -1,6 +1,6 @@
 "use client";
 import Profile from "@/components/profile";
-import useSupabaseClient from "@/lib/supabase/client";
+
 import { Button } from "@mantine/core";
 import { createBrowserClient } from "@supabase/ssr";
 

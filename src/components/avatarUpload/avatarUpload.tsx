@@ -43,11 +43,13 @@ export default function AvatarUpload({ onUpload }: AvatarProps) {
         color: "green",
       });
     } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to update avatar. Please try again.",
-        color: "red",
-      });
+      if (error) {
+        notifications.show({
+          title: "Error",
+          message: "Failed to update avatar. Please try again.",
+          color: "red",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

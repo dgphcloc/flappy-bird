@@ -1,5 +1,3 @@
-import { Providers } from "@/components/providers";
-import { MantineProvider, Text } from "@mantine/core";
 import AdminLayout from "./adminLayout";
 import { Notifications } from "@mantine/notifications";
 import "@mantine/notifications/styles.css";

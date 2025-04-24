@@ -10,11 +10,15 @@ export default class MenuLoginScene extends Phaser.Scene {
   private ContainerMenu!: Phaser.GameObjects.Container;
   private birdImageContainer!: Phaser.GameObjects.Container;
   private backgroundContainer!: Phaser.GameObjects.Rectangle;
-  private user: any;
+  private user: { id: string } | null = null;
   // State
   private isLoggedIn: boolean = false;
 
-  private buttonConfig: any[] = [
+  private buttonConfig: Array<{
+    name: string;
+    frameIndex: number;
+    alwaysShow: boolean;
+  }> = [
     { name: "login", frameIndex: 0, alwaysShow: false },
     { name: "play", frameIndex: 4, alwaysShow: false },
     { name: "birdSkins", frameIndex: 1, alwaysShow: false },
@@ -81,7 +85,7 @@ export default class MenuLoginScene extends Phaser.Scene {
     this.createBirdImageContainer(ScaleWidth, ScaleHeight);
 
     // Set up event listeners
-    this.setupResizeListener(ScaleWidth, ScaleHeight);
+    this.setupResizeListener();
 
     // Start bird animation
     this.birdMainBG.play("flappy");
@@ -117,7 +121,13 @@ export default class MenuLoginScene extends Phaser.Scene {
     this.updateMenuPosition(visibleButtons.length);
   }
 
-  private getVisibleButtons(buttonConfig: any[]) {
+  private getVisibleButtons(
+    buttonConfig: Array<{
+      name: string;
+      frameIndex: number;
+      alwaysShow: boolean;
+    }>
+  ) {
     return buttonConfig.filter((btn) => {
       if (this.isLoggedIn) {
         return (
@@ -129,7 +139,13 @@ export default class MenuLoginScene extends Phaser.Scene {
     });
   }
 
-  private renderButtons(visibleButtons: any[]) {
+  private renderButtons(
+    visibleButtons: Array<{
+      name: string;
+      frameIndex: number;
+      alwaysShow: boolean;
+    }>
+  ) {
     visibleButtons.forEach((btn, index) => {
       const spacing = this.scale.height * 0.11;
       const button = this.add.sprite(
@@ -144,7 +160,14 @@ export default class MenuLoginScene extends Phaser.Scene {
     });
   }
 
-  private setupButtonProperties(button: Phaser.GameObjects.Sprite, btn: any) {
+  private setupButtonProperties(
+    button: Phaser.GameObjects.Sprite,
+    btn: {
+      name: string;
+      frameIndex: number;
+      alwaysShow: boolean;
+    }
+  ) {
     // Sử dụng kích thước màn hình để tính scale
     const screenWidth = this.scale.width;
     const screenHeight = this.scale.height;
@@ -322,7 +345,7 @@ export default class MenuLoginScene extends Phaser.Scene {
     );
   }
 
-  private setupResizeListener(width: number, height: number) {
+  private setupResizeListener() {
     this.scale.on("resize", (gameSize: { width: number; height: number }) => {
       this.birdImageContainer.setPosition(0, 0);
       this.cameras.main.setSize(gameSize.width, gameSize.height);
@@ -337,7 +360,7 @@ export default class MenuLoginScene extends Phaser.Scene {
 
   private updateButtonScales(width: number, height: number) {
     // Lặp qua tất cả các button trong ContainerMenu và cập nhật scale
-    this.ContainerMenu.list.forEach((item: any) => {
+    this.ContainerMenu.list.forEach((item: Phaser.GameObjects.GameObject) => {
       if (item instanceof Phaser.GameObjects.Sprite) {
         const buttonWidth = item.width;
         const buttonHeight = item.height;
@@ -353,7 +376,7 @@ export default class MenuLoginScene extends Phaser.Scene {
     const {
       data: { session },
     } = await getUserSession();
-    this.user = session?.user;
+    this.user = session?.user || null;
     this.isLoggedIn = !!this.user?.id;
   }
 }
