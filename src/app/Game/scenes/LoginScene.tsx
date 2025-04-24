@@ -577,12 +577,12 @@ export default class LoginScene extends Phaser.Scene {
 
     // Xử lý hover
     this.spr_btn_x.on("pointerover", () => {
-      this.spr_btn_x.setFrame(1); // Frame hover
+      this.spr_btn_x.setFrame(1);
     });
     this.spr_btn_x.on("pointerout", () => {
-      this.spr_btn_x.setFrame(0); // Frame bình thường
+      this.spr_btn_x.setFrame(0);
     });
-    // Xử lý click
+
     this.spr_btn_x.on("pointerdown", () => {
       this.spr_btn_x.setFrame(2); // Frame click
     });
@@ -615,30 +615,6 @@ export default class LoginScene extends Phaser.Scene {
       if (this.errorText) {
         this.errorText.destroy();
         this.errorText = null;
-      }
-    });
-  }
-
-  private showSuccess(message: string) {
-    if (this.successText) {
-      this.successText.destroy();
-    }
-
-    this.successText = this.add.text(0, 0, message, {
-      fontFamily: "Kavoon",
-      fontSize: "20px",
-      color: "#00FF00",
-      align: "center",
-    });
-
-    this.successText.setOrigin(0.5);
-    this.successText.setPosition(0, this.backgroundFrame.displayHeight * 0.6);
-    this.LoginContainer.add(this.successText);
-
-    this.time.delayedCall(2000, () => {
-      if (this.successText) {
-        this.successText.destroy();
-        this.successText = null;
       }
     });
   }
