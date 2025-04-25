@@ -55,23 +55,30 @@ export async function POST(request: Request) {
     }
 
     const user = await getCurrentUserProfile();
+    console.log("USER UPLOAD FILE", user);
 
+    /**
+     * if user has avatar ,remove it.
+     */
     if (user) {
       const id = user.id;
-      const filePath = getFilenameFromUrl(user.avatar_url);
+      if (user.avatar_url) {
+        const filePath = getFilenameFromUrl(user.avatar_url);
+        if (filePath) {
+          const { error: removeError } = await supabase.storage
+            .from("avatars")
+            .remove([filePath]);
 
-      if (filePath) {
-        const { error: removeError } = await supabase.storage
-          .from("avatars")
-          .remove([filePath]);
-
-        if (removeError) {
-          return new Response(JSON.stringify({ error: removeError.message }), {
-            status: 500,
-          });
+          if (removeError) {
+            return new Response(
+              JSON.stringify({ error: removeError.message }),
+              {
+                status: 500,
+              }
+            );
+          }
         }
       }
-
       const publicUrl = supabase.storage.from("avatars").getPublicUrl(fileName)
         .data.publicUrl;
       //
